@@ -13,3 +13,4 @@ const SubscriptionSchema: Schema = new Schema({
 const Subscription: Model<ISubscription> = mongoose.models.Subscription || mongoose.model<ISubscription>('Subscription', SubscriptionSchema);
 export default Subscription;
 
+

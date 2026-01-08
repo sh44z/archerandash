@@ -45,11 +45,11 @@ export default function SubscriptionsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 p-8">
+        <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
             <div className="max-w-7xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Email Subscriptions</h1>
-                    <Link href="/hub" className="text-gray-600 hover:text-gray-900">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Email Subscriptions</h1>
+                    <Link href="/hub" className="text-sm sm:text-base text-gray-600 hover:text-gray-900 whitespace-nowrap">
                         ← Back to Dashboard
                     </Link>
                 </div>
@@ -64,10 +64,10 @@ export default function SubscriptionsPage() {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Email Address
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Subscribed Date
                                     </th>
                                 </tr>
@@ -88,10 +88,10 @@ export default function SubscriptionsPage() {
                                 ) : (
                                     subscriptions.map((subscription) => (
                                         <tr key={subscription._id}>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            <td className="px-4 sm:px-6 py-4 text-sm font-medium text-gray-900 break-words">
                                                 {subscription.email}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {formatDate(subscription.createdAt)}
                                             </td>
                                         </tr>
@@ -105,4 +105,5 @@ export default function SubscriptionsPage() {
         </div>
     );
 }
+
 

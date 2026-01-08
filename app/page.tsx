@@ -3,6 +3,7 @@ import ProductCard from './components/ProductCard';
 import NewsletterForm from './components/NewsletterForm';
 import Product from '@/models/Product';
 import dbConnect from '@/lib/db';
+import Link from 'next/link';
 
 // Force dynamic since we're fetching from DB to ensure fresh data
 export const dynamic = 'force-dynamic';
@@ -34,10 +35,10 @@ export default async function Home() {
       <div id="products" className="max-w-2xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
         <div className="md:flex md:items-center md:justify-between">
           <h2 className="text-2xl font-extrabold tracking-tight text-gray-900 font-serif">Latest Arrivals</h2>
-          <a href="#" className="hidden text-sm font-medium text-indigo-600 hover:text-indigo-500 md:block">Shop all collection<span aria-hidden="true"> &rarr;</span></a>
+          <Link href="/shop" className="hidden text-sm font-medium text-indigo-600 hover:text-indigo-500 md:block">Shop all collection<span aria-hidden="true"> &rarr;</span></Link>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-y-12 sm:grid-cols-2 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
+        <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
           {products.length === 0 ? (
             <div className="col-span-full text-center py-10 text-gray-500">
               No products found. Check back soon!
@@ -50,7 +51,7 @@ export default async function Home() {
         </div>
 
         <div className="mt-8 text-sm md:hidden">
-          <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">Shop all collection<span aria-hidden="true"> &rarr;</span></a>
+          <Link href="/shop" className="font-medium text-indigo-600 hover:text-indigo-500">Shop all collection<span aria-hidden="true"> &rarr;</span></Link>
         </div>
       </div>
 

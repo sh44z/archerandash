@@ -21,7 +21,7 @@ export default function Navbar() {
 
                     {/* Desktop Menu */}
                     <div className="hidden md:flex space-x-8 items-center">
-                        <Link href="/" className="text-gray-600 hover:text-black transition-colors text-sm uppercase tracking-wide">Shop</Link>
+                        <Link href="/shop" className="text-gray-600 hover:text-black transition-colors text-sm uppercase tracking-wide">Shop</Link>
                         <Link href="/about" className="text-gray-600 hover:text-black transition-colors text-sm uppercase tracking-wide">About</Link>
                         <Link href="/contact" className="text-gray-600 hover:text-black transition-colors text-sm uppercase tracking-wide">Contact</Link>
                         <Link href="/hub" className="text-indigo-600 hover:text-indigo-800 transition-colors text-sm uppercase tracking-wide font-medium">Hub</Link>
@@ -58,7 +58,7 @@ export default function Navbar() {
             {isOpen && (
                 <div className="md:hidden bg-white border-b border-gray-100">
                     <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                        <Link href="/" className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-black hover:bg-gray-50 uppercase tracking-wide">Shop</Link>
+                        <Link href="/shop" className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-black hover:bg-gray-50 uppercase tracking-wide">Shop</Link>
                         <Link href="/about" className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-black hover:bg-gray-50 uppercase tracking-wide">About</Link>
                         <Link href="/contact" className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-black hover:bg-gray-50 uppercase tracking-wide">Contact</Link>
                         <Link href="/hub" className="block px-3 py-2 text-base font-medium text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 uppercase tracking-wide">Hub</Link>

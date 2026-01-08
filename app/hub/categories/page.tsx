@@ -69,18 +69,18 @@ export default function CategoriesPage() {
     if (loading) return <div className="p-8">Loading...</div>;
 
     return (
-        <div className="min-h-screen bg-gray-50 p-8">
+        <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
             <div className="max-w-4xl mx-auto">
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                     <h1 className="text-2xl font-bold text-gray-900">Manage Categories</h1>
-                    <button onClick={() => router.push('/hub')} className="text-indigo-600 hover:text-indigo-800">Back to Hub</button>
+                    <button onClick={() => router.push('/hub')} className="text-sm sm:text-base text-indigo-600 hover:text-indigo-800 whitespace-nowrap">Back to Hub</button>
                 </div>
 
                 {/* Add Category Form */}
                 <div className="bg-white rounded-lg shadow p-6 mb-8">
                     <h2 className="text-lg font-medium mb-4">Add New Category</h2>
-                    <form onSubmit={handleAddCategory} className="flex gap-4 items-end">
-                        <div className="flex-grow">
+                    <form onSubmit={handleAddCategory} className="flex flex-col sm:flex-row gap-4 items-end">
+                        <div className="flex-grow w-full sm:w-auto">
                             <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                             <input
                                 type="text"
@@ -90,7 +90,7 @@ export default function CategoriesPage() {
                                 placeholder="e.g. Prints, Frames"
                             />
                         </div>
-                        <div className="w-1/3">
+                        <div className="w-full sm:w-1/3">
                             <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category (Optional)</label>
                             <select
                                 value={selectedParent}
@@ -103,7 +103,7 @@ export default function CategoriesPage() {
                                 ))}
                             </select>
                         </div>
-                        <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Add</button>
+                        <button type="submit" className="w-full sm:w-auto bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 whitespace-nowrap">Add</button>
                     </form>
                 </div>
 

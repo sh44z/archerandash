@@ -21,12 +21,49 @@ export default function CartDrawer() {
         });
     };
 
-    const onApprove = (data: any, actions: any) => {
-        return actions.order.capture().then((details: any) => {
-            alert("Transaction completed by " + details.payer.name.given_name);
+    const onApprove = async (data: any, actions: any) => {
+        try {
+            const details = await actions.order.capture();
+            
+            // Prepare order details with product information
+            const orderDetails = {
+                paypalOrderId: details.id,
+                customer: {
+                    name: `${details.payer.name.given_name} ${details.payer.name.surname}`,
+                    email: details.payer.email_address,
+                },
+                total: cartTotal.toFixed(2),
+                currency: details.purchase_units[0]?.amount?.currency_code || 'GBP',
+                products: items.map(item => ({
+                    productId: item.productId,
+                    productName: item.title,
+                    size: item.size,
+                    price: item.price,
+                    quantity: item.quantity,
+                    subtotal: (item.price * item.quantity).toFixed(2)
+                })),
+                orderDate: new Date().toISOString()
+            };
+
+            // Send order details to backend
+            try {
+                await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderDetails)
+                });
+            } catch (error) {
+                console.error('Failed to send order details:', error);
+                // Don't fail the transaction if notification fails
+            }
+
+            alert(`Transaction completed by ${details.payer.name.given_name}! Order details have been sent.`);
             clearCart();
             setIsCartOpen(false);
-        });
+        } catch (error) {
+            console.error('Payment error:', error);
+            alert('Payment completed but there was an error processing the order. Please contact support.');
+        }
     };
 
     return (
