@@ -63,8 +63,8 @@ export default function ProductCard({ product }: ProductCardProps) {
                     </span>
                 </div>
             </div>
-            <div className="mt-4 flex justify-between">
-                <div>
+            <div className="mt-4 flex flex-col sm:flex-row justify-between">
+                <div className="mb-2 sm:mb-0">
                     <h3 className="text-sm text-gray-700 uppercase tracking-wide font-medium">
                         {product.title}
                     </h3>

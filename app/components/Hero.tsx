@@ -18,6 +18,7 @@ interface HeroProps {
 
 export default function Hero({ products = [] }: HeroProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [imgSrc, setImgSrc] = useState('');
     // ... existing code ...
 
 
@@ -25,14 +26,10 @@ export default function Hero({ products = [] }: HeroProps) {
     const validProducts = products.filter(p => p.images && p.images.length > 0);
 
     useEffect(() => {
-        if (validProducts.length <= 1) return;
-
-        const timer = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % validProducts.length);
-        }, 5000);
-
-        return () => clearInterval(timer);
-    }, [validProducts.length]);
+        if (validProducts.length > 0) {
+            setImgSrc(normalizeDriveLink(validProducts[currentIndex].images[0]));
+        }
+    }, [currentIndex, validProducts]);
 
     if (validProducts.length === 0) {
         return (
@@ -69,11 +66,12 @@ export default function Hero({ products = [] }: HeroProps) {
                     className="absolute inset-0"
                 >
                     <img
-                        src={normalizeDriveLink(currentProduct.images[0])}
+                        src={imgSrc}
                         alt={currentProduct.title}
                         className="w-full h-full object-cover"
+                        onError={() => setImgSrc('https://via.placeholder.com/800x600?text=No+Image')}
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center">
                         <Link
                             href={`/product/${currentProduct._id}`}
                             className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
