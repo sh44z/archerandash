@@ -81,41 +81,6 @@ export default function Hero({ products = [] }: HeroProps) {
                     </div>
                 </motion.div>
             </AnimatePresence>
-
-            {/* Navigation Dots */}
-            {validProducts.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-30">
-                    {validProducts.map((_, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => setCurrentIndex(idx)}
-                            className={`w-3 h-3 rounded-full transition-colors ${idx === currentIndex ? 'bg-white' : 'bg-white/50'}`}
-                        />
-                    ))}
-                </div>
-            )}
-
-            {/* Arrows */}
-            {validProducts.length > 1 && (
-                <>
-                    <button
-                        onClick={() => setCurrentIndex((prev) => (prev - 1 + validProducts.length) % validProducts.length)}
-                        className="absolute left-4 top-1/2 transform -translate-y-1/2 z-30 p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition"
-                    >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                    </button>
-                    <button
-                        onClick={() => setCurrentIndex((prev) => (prev + 1) % validProducts.length)}
-                        className="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition"
-                    >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                    </button>
-                </>
-            )}
         </div>
     );
 }
