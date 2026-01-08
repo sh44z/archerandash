@@ -96,3 +96,4 @@ node scripts/seed-admin.js
 **Everything is ready! Just run `git push -u origin main` and follow the authentication steps above.**
 
 
+
