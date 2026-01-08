@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { normalizeDriveLink } from '@/lib/imageUtils';
@@ -23,16 +23,6 @@ export default function Hero({ products = [] }: HeroProps) {
 
     // Filter products that actually have images
     const validProducts = products.filter(p => p.images && p.images.length > 0);
-
-    useEffect(() => {
-        if (validProducts.length <= 1) return;
-
-        const timer = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % validProducts.length);
-        }, 5000);
-
-        return () => clearInterval(timer);
-    }, [validProducts.length]);
 
     if (validProducts.length === 0) {
         return (
