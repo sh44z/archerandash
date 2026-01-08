@@ -17,21 +17,37 @@ interface HeroProps {
 }
 
 export default function Hero({ products = [] }: HeroProps) {
-    const [currentIndex, setCurrentIndex] = useState(0);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [imgSrc, setImgSrc] = useState('');
-    // ... existing code ...
 
-
-    // Filter products that actually have images
-    const validProducts = products.filter(p => p.images && p.images.length > 0);
+    // Create a flat array of all product images
+    const allImages = products.flatMap((p) =>
+        p.images && p.images.length > 0
+            ? p.images.map((img) => ({
+                url: img,
+                productId: p._id,
+                productTitle: p.title,
+            }))
+            : []
+    );
 
     useEffect(() => {
-        if (validProducts.length > 0) {
-            setImgSrc(normalizeDriveLink(validProducts[currentIndex].images[0]));
-        }
-    }, [currentIndex, validProducts]);
+        if (allImages.length === 0) return;
 
-    if (validProducts.length === 0) {
+        const timer = setInterval(() => {
+            setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+        }, 5000);
+
+        return () => clearInterval(timer);
+    }, [allImages.length]);
+
+    useEffect(() => {
+        if (allImages.length > 0) {
+            setImgSrc(normalizeDriveLink(allImages[currentImageIndex].url));
+        }
+    }, [currentImageIndex, allImages]);
+
+    if (allImages.length === 0) {
         return (
             <div className="relative bg-zinc-900 h-[600px] flex items-center justify-center overflow-hidden">
                 <div className="text-center px-4">
@@ -52,13 +68,13 @@ export default function Hero({ products = [] }: HeroProps) {
         );
     }
 
-    const currentProduct = validProducts[currentIndex];
+    const currentImage = allImages[currentImageIndex];
 
     return (
         <div className="relative h-[500px] sm:h-[550px] md:h-[600px] overflow-hidden">
             <AnimatePresence mode='wait'>
                 <motion.div
-                    key={currentProduct._id}
+                    key={currentImageIndex}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -67,14 +83,14 @@ export default function Hero({ products = [] }: HeroProps) {
                 >
                     <img
                         src={imgSrc}
-                        alt={currentProduct.title}
+                        alt="Product"
                         className="w-full h-full object-cover"
                         onError={() => setImgSrc('https://via.placeholder.com/800x600?text=No+Image')}
                     />
-                    <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute inset-0 flex flex-col items-center justify-end pb-6 sm:pb-8 md:pb-10">
                         <Link
-                            href={`/product/${currentProduct._id}`}
-                            className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
+                            href={`/product/${currentImage.productId}`}
+                            className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-lg"
                         >
                             Shop Now
                         </Link>
