@@ -68,7 +68,6 @@ export default function ProductCard({ product }: ProductCardProps) {
                     <h3 className="text-sm text-gray-700 uppercase tracking-wide font-medium">
                         {product.title}
                     </h3>
-                    <p className="mt-1 text-sm text-gray-500">{product.category}</p>
                 </div>
                 <p className="text-sm font-medium text-gray-900">{priceDisplay}</p>
             </div>
