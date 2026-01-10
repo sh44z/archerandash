@@ -22,7 +22,7 @@ async function getProducts() {
     createdAt: p.createdAt?.toISOString(),
     variants: p.variants || [], // Ensure variants exist
     images: p.images || []
-  }));
+  })).filter(p => !p._id.startsWith('6961'));
 }
 
 export default async function Home() {
