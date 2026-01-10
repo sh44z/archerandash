@@ -11,7 +11,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <PayPalScriptProvider options={{
             "clientId": paypalClientId,
             currency: "GBP",
-            components: "buttons"
+            components: "buttons",
+            "enable-funding": "card",
+            "disable-funding": ""
         }}>
             <CartProvider>
                 {children}

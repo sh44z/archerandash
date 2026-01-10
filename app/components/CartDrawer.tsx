@@ -245,6 +245,7 @@ export default function CartDrawer() {
                                                         onApprove={onApprove}
                                                         onError={onError}
                                                         onCancel={onCancel}
+                                                        forceReRender={[cartTotal, items.length]}
                                                         className="w-full"
                                                     />
                                                 </div>
