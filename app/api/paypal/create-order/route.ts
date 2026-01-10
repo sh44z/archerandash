@@ -8,6 +8,8 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { cartItems, total } = body;
 
+        console.log('PayPal create order request:', { cartItems, total });
+
         // Validate required data
         if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
             return NextResponse.json({ error: 'Cart items are required' }, { status: 400 });
@@ -46,7 +48,9 @@ export async function POST(req: Request) {
             ]
         });
 
+        console.log('Sending request to PayPal API...');
         const order = await client.execute(request);
+        console.log('PayPal order created:', order.result.id);
 
         return NextResponse.json({
             id: order.result.id

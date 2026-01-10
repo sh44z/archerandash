@@ -11,6 +11,7 @@ export default function CartDrawer() {
     // PayPal handling
     const createOrder = async () => {
         try {
+            console.log('Creating PayPal order with items:', items, 'total:', cartTotal);
             const response = await fetch('/api/paypal/create-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -22,10 +23,12 @@ export default function CartDrawer() {
 
             if (!response.ok) {
                 const errorData = await response.json();
+                console.error('PayPal order creation failed:', errorData);
                 throw new Error(errorData.error || 'Failed to create order');
             }
 
             const orderData = await response.json();
+            console.log('PayPal order created successfully:', orderData.id);
             return orderData.id;
         } catch (error) {
             console.error('Error creating PayPal order:', error);
