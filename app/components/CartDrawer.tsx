@@ -9,22 +9,35 @@ export default function CartDrawer() {
     const { isCartOpen, setIsCartOpen, items, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
 
     // PayPal handling
-    const createOrder = (data: any, actions: any) => {
-        return actions.order.create({
-            purchase_units: [
-                {
-                    amount: {
-                        value: cartTotal.toFixed(2),
-                    },
-                },
-            ],
-        });
+    const createOrder = async () => {
+        try {
+            const response = await fetch('/api/paypal/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    cartItems: items,
+                    total: cartTotal
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to create order');
+            }
+
+            const orderData = await response.json();
+            return orderData.id;
+        } catch (error) {
+            console.error('Error creating PayPal order:', error);
+            throw error;
+        }
     };
 
     const onApprove = async (data: any, actions: any) => {
         try {
+            // Capture the order
             const details = await actions.order.capture();
-            
+
             // Prepare order details with product information
             const orderDetails = {
                 paypalOrderId: details.id,
@@ -47,11 +60,15 @@ export default function CartDrawer() {
 
             // Send order details to backend
             try {
-                await fetch('/api/orders', {
+                const response = await fetch('/api/orders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(orderDetails)
                 });
+
+                if (!response.ok) {
+                    console.error('Failed to send order details to backend');
+                }
             } catch (error) {
                 console.error('Failed to send order details:', error);
                 // Don't fail the transaction if notification fails
@@ -60,10 +77,34 @@ export default function CartDrawer() {
             alert(`Transaction completed by ${details.payer.name.given_name}! Order details have been sent.`);
             clearCart();
             setIsCartOpen(false);
-        } catch (error) {
-            console.error('Payment error:', error);
-            alert('Payment completed but there was an error processing the order. Please contact support.');
+        } catch (error: any) {
+            console.error('Payment capture error:', error);
+
+            // Handle specific PayPal errors
+            if (error.details && error.details[0]) {
+                alert(`Payment failed: ${error.details[0].description}`);
+            } else {
+                alert('Payment completed but there was an error processing the order. Please contact support.');
+            }
         }
+    };
+
+    const onError = (error: any) => {
+        console.error('PayPal checkout error:', error);
+
+        // Handle different types of errors
+        if (error === 'INSTRUMENT_DECLINED') {
+            alert('Your payment method was declined. Please try a different payment method.');
+        } else if (error === 'SHIPPING_ADDRESS_INVALID') {
+            alert('There was an issue with the shipping address. Please check your PayPal account settings.');
+        } else {
+            alert('There was an error processing your payment. Please try again or contact support.');
+        }
+    };
+
+    const onCancel = (data: any) => {
+        console.log('PayPal checkout cancelled:', data);
+        // Optional: Track cancellation for analytics
     };
 
     return (
@@ -199,6 +240,8 @@ export default function CartDrawer() {
                                                         style={{ layout: "vertical" }}
                                                         createOrder={createOrder}
                                                         onApprove={onApprove}
+                                                        onError={onError}
+                                                        onCancel={onCancel}
                                                         className="w-full"
                                                     />
                                                 </div>
