@@ -77,7 +77,7 @@ export default function CartDrawer() {
                 // Don't fail the transaction if notification fails
             }
 
-            alert(`Transaction completed by ${details.payer.name.given_name}! Order details have been sent.`);
+            alert(`Transaction completed by ${details.payer.name.given_name}! Thank you for your purchase. Order details have been sent.`);
             clearCart();
             setIsCartOpen(false);
         } catch (error: any) {
