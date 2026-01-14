@@ -28,12 +28,10 @@ interface Order {
     total: number;
     currency: string;
     products: Array<{
-        productId: string;
-        productName: string;
-        size: string;
+        id: string;
+        name: string;
         price: number;
         quantity: number;
-        subtotal: number;
         image?: string;
     }>;
     status: 'paid' | 'shipped' | 'completed' | 'cancelled';
@@ -403,12 +401,12 @@ export default function HubPage() {
                                                             {product.image && (
                                                                 <img
                                                                     src={product.image}
-                                                                    alt={product.productName}
+                                                                    alt={product.name}
                                                                     className="w-12 h-12 object-cover rounded"
                                                                 />
                                                             )}
                                                             <div className="flex-1">
-                                                                <p className="font-medium text-sm">{product.productName}</p>
+                                                                <p className="font-medium text-sm">{product.name}</p>
                                                                 <p className="text-xs text-gray-600">
                                                                     Qty: {product.quantity} × £{product.price.toFixed(2)}
                                                                 </p>
