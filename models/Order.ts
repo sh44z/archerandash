@@ -5,6 +5,14 @@ export interface IOrder extends Document {
     customer: {
         name: string;
         email: string;
+        address?: {
+            line1: string;
+            line2?: string;
+            city: string;
+            state: string;
+            postal_code: string;
+            country_code: string;
+        };
     };
     total: number;
     currency: string;
@@ -16,15 +24,7 @@ export interface IOrder extends Document {
         quantity: number;
         subtotal: number;
     }>;
-    shippingAddress?: {
-        address_line_1: string;
-        address_line_2?: string;
-        admin_area_2: string; // city
-        admin_area_1: string; // state/province
-        postal_code: string;
-        country_code: string;
-    };
-    status: 'paid' | 'shipped' | 'completed';
+    status: 'paid' | 'shipped' | 'completed' | 'cancelled';
     orderDate: Date;
     createdAt: Date;
     updatedAt: Date;
@@ -34,7 +34,15 @@ const OrderSchema: Schema = new Schema({
     paypalOrderId: { type: String, required: true, unique: true },
     customer: {
         name: { type: String, required: true },
-        email: { type: String, required: true }
+        email: { type: String, required: true },
+        address: {
+            line1: { type: String },
+            line2: { type: String },
+            city: { type: String },
+            state: { type: String },
+            postal_code: { type: String },
+            country_code: { type: String }
+        }
     },
     total: { type: Number, required: true },
     currency: { type: String, required: true, default: 'GBP' },
@@ -46,15 +54,7 @@ const OrderSchema: Schema = new Schema({
         quantity: { type: Number, required: true },
         subtotal: { type: Number, required: true }
     }],
-    shippingAddress: {
-        address_line_1: { type: String },
-        address_line_2: { type: String },
-        admin_area_2: { type: String },
-        admin_area_1: { type: String },
-        postal_code: { type: String },
-        country_code: { type: String }
-    },
-    status: { type: String, enum: ['paid', 'shipped', 'completed'], default: 'paid' },
+    status: { type: String, enum: ['paid', 'shipped', 'completed', 'cancelled'], default: 'paid' },
     orderDate: { type: Date, default: Date.now },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }

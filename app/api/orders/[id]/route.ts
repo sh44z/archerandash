@@ -4,6 +4,35 @@ import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import Order from '@/models/Order';
 
+// GET - Protected (get single order)
+export async function GET(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
+    const user = token && await verifyToken(token);
+
+    if (!user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    try {
+        await dbConnect();
+        const { id } = await params;
+        const order = await Order.findById(id);
+
+        if (!order) {
+            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+        }
+
+        return NextResponse.json(order);
+    } catch (error) {
+        console.error('Error fetching order:', error);
+        return NextResponse.json({ error: 'Failed to fetch order' }, { status: 500 });
+    }
+}
+
 // PATCH - Protected (update order status)
 export async function PATCH(
     req: Request,

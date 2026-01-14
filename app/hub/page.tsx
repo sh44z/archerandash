@@ -377,16 +377,18 @@ export default function HubPage() {
                                                 <div className="space-y-1 text-sm">
                                                     <p><span className="font-medium">Name:</span> {selectedOrder.customer.name}</p>
                                                     <p><span className="font-medium">Email:</span> {selectedOrder.customer.email}</p>
-                                                    <div className="mt-2">
-                                                        <p className="font-medium">Address:</p>
-                                                        <p className="text-gray-600">
-                                                            {selectedOrder.customer.address.line1}<br />
-                                                            {selectedOrder.customer.address.line2 && <>{selectedOrder.customer.address.line2}<br /></>}
-                                                            {selectedOrder.customer.address.city}, {selectedOrder.customer.address.state}<br />
-                                                            {selectedOrder.customer.address.postal_code}<br />
-                                                            {selectedOrder.customer.address.country_code}
-                                                        </p>
-                                                    </div>
+                                                    {selectedOrder.customer.address && (
+                                                        <div className="mt-2">
+                                                            <p className="font-medium">Address:</p>
+                                                            <p className="text-gray-600">
+                                                                {selectedOrder.customer.address.line1}<br />
+                                                                {selectedOrder.customer.address.line2 && <>{selectedOrder.customer.address.line2}<br /></>}
+                                                                {selectedOrder.customer.address.city}, {selectedOrder.customer.address.state}<br />
+                                                                {selectedOrder.customer.address.postal_code}<br />
+                                                                {selectedOrder.customer.address.country_code}
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
 

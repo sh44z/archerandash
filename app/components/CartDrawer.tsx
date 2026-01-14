@@ -2,11 +2,13 @@
 
 import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { PayPalButtons } from '@paypal/react-paypal-js';
 
 export default function CartDrawer() {
     const { isCartOpen, setIsCartOpen, items, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
+    const router = useRouter();
 
     // PayPal handling
     const createOrder = async () => {
@@ -47,6 +49,14 @@ export default function CartDrawer() {
                 customer: {
                     name: `${details.payer.name.given_name} ${details.payer.name.surname}`,
                     email: details.payer.email_address,
+                    address: details.purchase_units[0]?.shipping?.address ? {
+                        line1: details.purchase_units[0].shipping.address.address_line_1,
+                        line2: details.purchase_units[0].shipping.address.address_line_2,
+                        city: details.purchase_units[0].shipping.address.admin_area_2,
+                        state: details.purchase_units[0].shipping.address.admin_area_1,
+                        postal_code: details.purchase_units[0].shipping.address.postal_code,
+                        country_code: details.purchase_units[0].shipping.address.country_code
+                    } : null
                 },
                 total: cartTotal.toFixed(2),
                 currency: details.purchase_units[0]?.amount?.currency_code || 'GBP',
@@ -77,9 +87,9 @@ export default function CartDrawer() {
                 // Don't fail the transaction if notification fails
             }
 
-            alert(`Transaction completed by ${details.payer.name.given_name}! Thank you for your purchase. Order details have been sent.`);
             clearCart();
             setIsCartOpen(false);
+            router.push('/thank-you');
         } catch (error: any) {
             console.error('Payment capture error:', error);
 
