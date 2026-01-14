@@ -71,7 +71,7 @@ export default function Hero({ products = [] }: HeroProps) {
     const currentImage = allImages[currentImageIndex];
 
     return (
-        <div className="relative h-[400px] sm:h-[450px] md:h-[500px] overflow-hidden">
+        <div className="relative h-[350px] sm:h-[400px] md:h-[450px] overflow-hidden">
             <AnimatePresence mode='wait'>
                 <motion.div
                     key={currentImageIndex}
