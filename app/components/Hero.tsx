@@ -70,8 +70,9 @@ export default function Hero({ products = [] }: HeroProps) {
 
     const currentImage = allImages[currentImageIndex];
 
+
     return (
-        <div className="relative h-[22rem] sm:h-[28rem] md:h-[32rem] lg:h-[40rem] overflow-hidden">
+        <div className="relative h-[22rem] sm:h-[28rem] md:h-[32rem] lg:h-[40rem] xl:h-[48rem] 2xl:h-[56rem] overflow-hidden">
             <AnimatePresence mode='wait'>
                 <motion.div
                     key={currentImageIndex}
@@ -84,7 +85,7 @@ export default function Hero({ products = [] }: HeroProps) {
                     <img
                         src={imgSrc}
                         alt="Product"
-                        className="w-full h-full object-cover object-top"
+                        className="w-full h-full object-cover object-center"
                         onError={() => setImgSrc('https://via.placeholder.com/800x600?text=No+Image')}
                     />
                     <div className="absolute inset-0 flex flex-col items-center justify-end pb-6 sm:pb-8 md:pb-10">
