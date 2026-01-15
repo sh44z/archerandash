@@ -57,6 +57,9 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  verification: {
+    google: 'fBgp5utdHXGENZVepKIO4tlQNSyvXFCtahKQqOnXreU',
+  },
 };
 
 import Navbar from "./components/Navbar";
