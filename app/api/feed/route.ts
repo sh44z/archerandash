@@ -11,13 +11,13 @@ export async function GET() {
         const products = await Product.find({}).sort({ createdAt: -1 }).lean();
 
         const baseUrl = 'https://www.archerandash.com';
-        const xmlHeader = `<?xml version="1.0"?>
+        // Trim whitespace to ensure it starts with <?xml
+        const xmlHeader = `<?xml version="1.0" encoding="UTF-8"?>
 <rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
 <channel>
 <title>Archer and Ash Products</title>
 <link>${baseUrl}</link>
-<description>Modern Canvas Art &amp; Wall Decor</description>
-`;
+<description>Modern Canvas Art &amp; Wall Decor</description>`;
 
         const xmlFooter = `
 </channel>
@@ -57,18 +57,23 @@ export async function GET() {
 <g:item_group_id>${product._id}</g:item_group_id>
 <g:google_product_category>500044</g:google_product_category> 
 </item>`;
-            // 500044 is 'Home & Garden > Decor > Artwork > Posters, Prints, & Visual Artwork' which fits nicely
         }).join('');
 
-        return new NextResponse(xmlHeader + items + xmlFooter, {
+        const xmlContent = (xmlHeader + items + xmlFooter).trim();
+
+        return new NextResponse(xmlContent, {
             headers: {
-                'Content-Type': 'text/xml',
+                'Content-Type': 'application/rss+xml; charset=utf-8',
                 'Cache-Control': 's-maxage=3600, stale-while-revalidate',
             },
         });
 
     } catch (error) {
         console.error('Error generating feed:', error);
-        return new NextResponse('Error generating feed', { status: 500 });
+        // Return JSON on error so we can debug, or simple text.
+        return new NextResponse(JSON.stringify({ error: 'Failed to generate feed' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
     }
 }
