@@ -39,10 +39,67 @@ export default async function ProductPage({ params }: PageProps) {
         notFound();
     }
 
+
     return (
         <div className="bg-white min-h-screen">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "Product",
+                        name: product.title,
+                        description: product.description,
+                        image: product.images,
+                        sku: product._id,
+                        brand: {
+                            "@type": "Brand",
+                            name: "Archer and Ash"
+                        },
+                        offers: {
+                            "@type": "AggregateOffer",
+                            priceCurrency: "GBP",
+                            lowPrice: product.variants?.length > 0 ? Math.min(...product.variants.map((v: any) => v.price)) : 0,
+                            highPrice: product.variants?.length > 0 ? Math.max(...product.variants.map((v: any) => v.price)) : 0,
+                            offerCount: product.variants?.length || 0,
+                            availability: "https://schema.org/InStock"
+                        }
+                    })
+                }}
+            />
             {/* @ts-ignore */}
             <ProductDetails product={product} />
         </div>
     );
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<import("next").Metadata> {
+    const { id } = await params;
+    const product = await getProduct(id);
+
+    if (!product) {
+        return {
+            title: "Product Not Found",
+            description: "The requested product could not be found."
+        };
+    }
+
+    const mainImage = product.images?.[0] || "";
+
+    return {
+        title: product.title,
+        description: product.description?.substring(0, 160) || `Buy ${product.title} at Archer and Ash`,
+        openGraph: {
+            title: product.title,
+            description: product.description?.substring(0, 200),
+            images: mainImage ? [{ url: mainImage }] : [],
+            type: 'article' // or 'product' context
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: product.title,
+            description: product.description?.substring(0, 200),
+            images: mainImage ? [mainImage] : [],
+        }
+    };
 }
