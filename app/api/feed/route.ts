@@ -53,6 +53,8 @@ export async function GET() {
 <g:availability>in_stock</g:availability>
 <g:price>${price.toFixed(2)} GBP</g:price>
 <g:brand>Archer and Ash</g:brand>
+<g:identifier_exists>no</g:identifier_exists>
+<g:item_group_id>${product._id}</g:item_group_id>
 <g:google_product_category>500044</g:google_product_category> 
 </item>`;
             // 500044 is 'Home & Garden > Decor > Artwork > Posters, Prints, & Visual Artwork' which fits nicely
