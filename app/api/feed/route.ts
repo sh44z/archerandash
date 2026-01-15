@@ -10,7 +10,7 @@ export async function GET() {
         await dbConnect();
         const products = await Product.find({}).sort({ createdAt: -1 }).lean();
 
-        const baseUrl = 'https://www.archerandash.com';
+        const baseUrl = 'https://archerandash.com';
         // Trim whitespace to ensure it starts with <?xml
         const xmlHeader = `<?xml version="1.0" encoding="UTF-8"?>
 <rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
