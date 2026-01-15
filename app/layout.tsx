@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://archerandash.com'),
+  metadataBase: new URL('https://www.archerandash.com'),
   title: {
     default: "Archer and Ash | Modern Canvas Art & Wall Decor",
     template: "%s | Archer and Ash"
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_GB",
-    url: "https://archerandash.com",
+    url: "https://www.archerandash.com",
     siteName: "Archer and Ash",
     title: "Archer and Ash | Modern Canvas Art & Wall Decor",
     description: "Discover unique canvas prints and wall art for modern living.",
