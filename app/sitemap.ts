@@ -3,7 +3,7 @@ import dbConnect from '@/lib/db';
 import Product from '@/models/Product';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const baseUrl = 'https://www.archerandash.com'; // TODO: Update with your actual domain
+    const baseUrl = 'https://www.archerandash.com';
 
     await dbConnect();
 

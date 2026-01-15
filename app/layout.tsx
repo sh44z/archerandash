@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.archerandash.com'), // TODO: Update with actual domain
+  metadataBase: new URL('https://www.archerandash.com'),
   title: {
     default: "Archer and Ash | Modern Canvas Art & Wall Decor",
     template: "%s | Archer and Ash"
