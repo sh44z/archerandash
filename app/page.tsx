@@ -33,6 +33,16 @@ export default async function Home() {
       <Hero products={products.slice(0, 5)} />
 
       <div id="products" className="max-w-2xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
+        <div className="mb-12 text-center max-w-3xl mx-auto">
+          <p className="text-lg text-gray-600 leading-relaxed font-light">
+            Transform your space with our curated collection of diverse
+            <span className="font-medium text-gray-900"> wall arts</span>,
+            premium <span className="font-medium text-gray-900">posters</span>, and
+            stunning <span className="font-medium text-gray-900">canvas prints</span>.
+            Each piece is selected to bring character and modern elegance to your home.
+          </p>
+        </div>
+
         <div className="md:flex md:items-center md:justify-between">
           <h2 className="text-2xl font-extrabold tracking-tight text-gray-900 font-serif">Latest Arrivals</h2>
           <Link href="/shop" className="hidden text-sm font-medium text-indigo-600 hover:text-indigo-500 md:block">Shop all collection<span aria-hidden="true"> &rarr;</span></Link>

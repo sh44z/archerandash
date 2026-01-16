@@ -20,8 +20,8 @@ export const metadata: Metadata = {
     default: "Archer and Ash | Modern Canvas Art & Wall Decor",
     template: "%s | Archer and Ash"
   },
-  description: "Discover unique canvas prints and wall art for modern living. Archer and Ash offers curated art pieces to elevate your home decor.",
-  keywords: ["wall art", "canvas prints", "home decor", "modern art", "abstract art", "interior design"],
+  description: "Discover unique wall arts, posters, and canvas prints for modern living. Archer and Ash offers curated art pieces to elevate your home decor.",
+  keywords: ["wall art", "canvas prints", "posters", "home decor", "modern art", "abstract art", "interior design"],
   authors: [{ name: "Archer and Ash" }],
   creator: "Archer and Ash",
   openGraph: {
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     url: "https://www.archerandash.com",
     siteName: "Archer and Ash",
     title: "Archer and Ash | Modern Canvas Art & Wall Decor",
-    description: "Discover unique canvas prints and wall art for modern living.",
+    description: "Discover unique wall arts, posters, and canvas prints for modern living.",
     images: [
       {
         url: "/og-image.jpg", // TODO: Add an OG image
