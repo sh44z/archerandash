@@ -8,11 +8,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     await dbConnect();
 
     // Get all products
-    const products = await Product.find({}).select('_id updatedAt').lean();
+    const products = await Product.find({}).select('_id updatedAt createdAt').lean();
 
     const productEntries: MetadataRoute.Sitemap = products.map((product: any) => ({
         url: `${baseUrl}/product/${product._id.toString()}`,
-        lastModified: product.updatedAt || new Date(),
+        lastModified: product.updatedAt || product.createdAt || new Date(),
         changeFrequency: 'weekly',
         priority: 0.8,
     }));
@@ -32,6 +32,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
         {
             url: `${baseUrl}/about`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly',
+            priority: 0.5,
+        },
+        {
+            url: `${baseUrl}/shipping`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly',
+            priority: 0.5,
+        },
+        {
+            url: `${baseUrl}/refunds`,
             lastModified: new Date(),
             changeFrequency: 'monthly',
             priority: 0.5,
