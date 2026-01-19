@@ -44,6 +44,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: 'Category with this name already exists' }, { status: 400 });
         }
 
+
         const category = await Category.create({
             name,
             slug,
@@ -54,5 +55,58 @@ export async function POST(req: Request) {
     } catch (error) {
         console.error(error);
         return NextResponse.json({ success: false, error: 'Failed to create category' }, { status: 500 });
+    }
+}
+
+export async function PUT(req: Request) {
+    await dbConnect();
+    try {
+        const body = await req.json();
+        const { id, name } = body;
+
+        if (!id || !name) {
+            return NextResponse.json({ success: false, error: 'ID and Name are required' }, { status: 400 });
+        }
+
+        const slug = slugify(name);
+
+        // Check for duplicates excluding current category
+        const existing = await Category.findOne({ slug, _id: { $ne: id } });
+        if (existing) {
+            return NextResponse.json({ success: false, error: 'Category with this name already exists' }, { status: 400 });
+        }
+
+        const category = await Category.findByIdAndUpdate(
+            id,
+            { name, slug },
+            { new: true }
+        );
+
+        return NextResponse.json({ success: true, category });
+    } catch (error) {
+        console.error(error);
+        return NextResponse.json({ success: false, error: 'Failed to update category' }, { status: 500 });
+    }
+}
+
+export async function DELETE(req: Request) {
+    await dbConnect();
+    try {
+        const { searchParams } = new URL(req.url);
+        const id = searchParams.get('id');
+
+        if (!id) {
+            return NextResponse.json({ success: false, error: 'ID is required' }, { status: 400 });
+        }
+
+        // Optional: Check if products use this category before deleting?
+        // For now, let's just delete.
+
+        await Category.findByIdAndDelete(id);
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        return NextResponse.json({ success: false, error: 'Failed to delete category' }, { status: 500 });
     }
 }

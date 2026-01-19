@@ -17,6 +17,10 @@ export default function CategoriesPage() {
     const [newCategoryName, setNewCategoryName] = useState('');
     const [selectedParent, setSelectedParent] = useState<string>(''); // For adding subcategory
 
+    // Edit state
+    const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+    const [editName, setEditName] = useState('');
+
     useEffect(() => {
         fetchCategories();
     }, []);
@@ -59,6 +63,61 @@ export default function CategoriesPage() {
             }
         } catch (error) {
             alert('Failed to add category');
+        }
+    };
+
+    const handleDelete = async (id: string, name: string) => {
+        if (!confirm(`Are you sure you want to delete category "${name}"?`)) return;
+
+        try {
+            const res = await fetch(`/api/categories?id=${id}`, {
+                method: 'DELETE',
+            });
+            if (res.ok) {
+                fetchCategories();
+                router.refresh();
+            } else {
+                alert('Failed to delete category');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Error deleting category');
+        }
+    };
+
+    const startEditing = (category: Category) => {
+        setEditingCategory(category);
+        setEditName(category.name);
+    };
+
+    const cancelEditing = () => {
+        setEditingCategory(null);
+        setEditName('');
+    };
+
+    const saveEdit = async () => {
+        if (!editingCategory || !editName.trim()) return;
+
+        try {
+            const res = await fetch('/api/categories', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: editingCategory._id,
+                    name: editName
+                }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                setEditingCategory(null);
+                setEditName('');
+                fetchCategories();
+                router.refresh();
+            } else {
+                alert(data.error);
+            }
+        } catch (error) {
+            alert('Failed to update category');
         }
     };
 
@@ -119,15 +178,63 @@ export default function CategoriesPage() {
                         {topLevelCategories.map(cat => (
                             <li key={cat._id} className="px-6 py-4">
                                 <div className="flex justify-between items-center">
-                                    <span className="font-medium text-gray-900">{cat.name}</span>
-                                    <span className="text-gray-400 text-xs bg-gray-100 px-2 py-1 rounded">Slug: {cat.slug}</span>
+                                    <div className="flex items-center gap-2">
+                                        {editingCategory?._id === cat._id ? (
+                                            <input
+                                                type="text"
+                                                value={editName}
+                                                onChange={e => setEditName(e.target.value)}
+                                                className="border border-gray-300 rounded px-2 py-1 text-sm bg-white"
+                                            />
+                                        ) : (
+                                            <span className="font-medium text-gray-900">{cat.name}</span>
+                                        )}
+                                        <span className="text-gray-400 text-xs bg-gray-100 px-2 py-1 rounded">Slug: {cat.slug}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {editingCategory?._id === cat._id ? (
+                                            <>
+                                                <button onClick={saveEdit} className="text-sm text-green-600 hover:text-green-800">Save</button>
+                                                <button onClick={cancelEditing} className="text-sm text-gray-500 hover:text-gray-700">Cancel</button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <button onClick={() => startEditing(cat)} className="text-sm text-indigo-600 hover:text-indigo-800">Edit</button>
+                                                <button onClick={() => handleDelete(cat._id, cat.name)} className="text-sm text-red-600 hover:text-red-800">Delete</button>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
                                 {/* Subcategories */}
                                 <ul className="mt-2 ml-6 border-l-2 border-gray-100 pl-4 space-y-2">
                                     {getSubcategories(cat._id).map(sub => (
                                         <li key={sub._id} className="text-sm text-gray-600 flex justify-between items-center">
-                                            <span>{sub.name}</span>
-                                            <span className="text-xs text-gray-400">Slug: {sub.slug}</span>
+                                            <div className="flex items-center gap-2">
+                                                {editingCategory?._id === sub._id ? (
+                                                    <input
+                                                        type="text"
+                                                        value={editName}
+                                                        onChange={e => setEditName(e.target.value)}
+                                                        className="border border-gray-300 rounded px-2 py-1 text-sm bg-white"
+                                                    />
+                                                ) : (
+                                                    <span>{sub.name}</span>
+                                                )}
+                                                <span className="text-xs text-gray-400">Slug: {sub.slug}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {editingCategory?._id === sub._id ? (
+                                                    <>
+                                                        <button onClick={saveEdit} className="text-xs text-green-600 hover:text-green-800">Save</button>
+                                                        <button onClick={cancelEditing} className="text-xs text-gray-500 hover:text-gray-700">Cancel</button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <button onClick={() => startEditing(sub)} className="text-xs text-indigo-600 hover:text-indigo-800">Edit</button>
+                                                        <button onClick={() => handleDelete(sub._id, sub.name)} className="text-xs text-red-600 hover:text-red-800">Delete</button>
+                                                    </>
+                                                )}
+                                            </div>
                                         </li>
                                     ))}
                                     {getSubcategories(cat._id).length === 0 && (

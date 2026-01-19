@@ -7,8 +7,9 @@ export interface IProduct extends Document {
     price?: number;
     sizes?: string[];
 
-    // New fields
-    category?: mongoose.Types.ObjectId;
+    // New
+    category?: mongoose.Types.ObjectId; // Deprecated in favor of categories
+    categories?: mongoose.Types.ObjectId[];
     variants: { size: string; price: number }[];
 
     images: string[];
@@ -25,6 +26,7 @@ const ProductSchema: Schema = new Schema({
 
     // New
     category: { type: Schema.Types.ObjectId, ref: 'Category', required: false },
+    categories: [{ type: Schema.Types.ObjectId, ref: 'Category' }],
     variants: [{
         size: { type: String, required: true },
         price: { type: Number, required: true }

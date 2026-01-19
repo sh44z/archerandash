@@ -1,9 +1,12 @@
 import Hero from './components/Hero';
 import ProductCard from './components/ProductCard';
 import NewsletterForm from './components/NewsletterForm';
+import CategoryGrid from './components/CategoryGrid';
 import Product from '@/models/Product';
+import Category from '@/models/Category';
 import dbConnect from '@/lib/db';
 import Link from 'next/link';
+import { normalizeDriveLink } from '@/lib/imageUtils';
 
 // Force dynamic since we're fetching from DB to ensure fresh data
 export const dynamic = 'force-dynamic';
@@ -25,12 +28,47 @@ async function getProducts() {
   })).filter(p => !p._id.startsWith('6961'));
 }
 
+async function getCategoriesWithImages() {
+  await dbConnect();
+  // Fetch top-level categories
+  const categories = await Category.find({ parent: null }).lean();
+
+  const categoriesWithImages = await Promise.all(categories.map(async (cat: any) => {
+    // Find a product in this category (checking both new 'categories' array and legacy 'category' field)
+    const product = await Product.findOne({
+      $or: [
+        { categories: cat._id },
+        { category: cat._id }
+      ],
+      images: { $exists: true, $not: { $size: 0 } }
+    }).select('images').lean();
+
+    let imageUrl = 'https://via.placeholder.com/400x400?text=No+Image';
+    if (product && product.images && product.images.length > 0) {
+      imageUrl = normalizeDriveLink(product.images[0]);
+    }
+
+    return {
+      id: cat._id.toString(),
+      name: cat.name,
+      slug: cat.slug,
+      imageUrl
+    };
+  }));
+
+  return categoriesWithImages;
+}
+
 export default async function Home() {
   const products = await getProducts();
+  const categories = await getCategoriesWithImages();
 
   return (
     <div className="bg-white min-h-screen">
       <Hero products={products.slice(0, 5)} />
+
+      {/* Category Grid Section */}
+      <CategoryGrid categories={categories} />
 
       <div id="products" className="max-w-2xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
         <div className="mb-12 text-center max-w-3xl mx-auto">

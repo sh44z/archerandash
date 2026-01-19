@@ -18,7 +18,7 @@ export default function EditProductPage() {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        category: '',
+        categories: [] as string[],
         images: ['', '', '', '', '', ''],
     });
 
@@ -43,7 +43,7 @@ export default function EditProductPage() {
                 setFormData({
                     title: product.title || '',
                     description: product.description || '',
-                    category: product.category || '',
+                    categories: product.categories || (product.category ? [product.category] : []),
                     images: product.images ? [...product.images, '', '', '', '', ''].slice(0, 6) : ['', '', '', '', '', ''],
                 });
 
@@ -86,6 +86,17 @@ export default function EditProductPage() {
             .catch(console.error);
     }, []);
 
+    const handleCategoryToggle = (categoryId: string) => {
+        setFormData(prev => {
+            const current = prev.categories || [];
+            if (current.includes(categoryId)) {
+                return { ...prev, categories: current.filter(id => id !== categoryId) };
+            } else {
+                return { ...prev, categories: [...current, categoryId] };
+            }
+        });
+    };
+
     const handleVariantChange = (index: number, field: 'size' | 'price', value: string) => {
         const newVariants = [...variants];
         newVariants[index][field] = value;
@@ -123,7 +134,8 @@ export default function EditProductPage() {
         const payload = {
             title: formData.title,
             description: formData.description,
-            category: formData.category || undefined,
+            categories: formData.categories,
+            category: formData.categories[0] || undefined,
             variants: variants.map(v => ({
                 size: v.size,
                 price: parseFloat(v.price)
@@ -151,21 +163,39 @@ export default function EditProductPage() {
         }
     };
 
-    // Helper to organize categories for dropdown
-    const renderCategoryOptions = () => {
+    // Helper to organize categories for checkboxes
+    const renderCategoryCheckboxes = () => {
         const topLevel = categories.filter(c => !c.parent);
         return topLevel.map(parent => {
             const children = categories.filter(c => c.parent === parent._id);
-            if (children.length > 0) {
-                return (
-                    <optgroup key={parent._id} label={parent.name}>
-                        {children.map(child => (
-                            <option key={child._id} value={child._id}>{child.name}</option>
-                        ))}
-                    </optgroup>
-                );
-            }
-            return <option key={parent._id} value={parent._id}>{parent.name}</option>;
+            return (
+                <div key={parent._id} className="mb-4">
+                    <div className="flex items-center mb-2">
+                        <input
+                            type="checkbox"
+                            checked={(formData.categories || []).includes(parent._id)}
+                            onChange={() => handleCategoryToggle(parent._id)}
+                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        />
+                        <span className="ml-2 font-medium text-gray-900">{parent.name}</span>
+                    </div>
+                    {children.length > 0 && (
+                        <div className="ml-6 space-y-2">
+                            {children.map(child => (
+                                <div key={child._id} className="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={(formData.categories || []).includes(child._id)}
+                                        onChange={() => handleCategoryToggle(child._id)}
+                                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                    />
+                                    <span className="ml-2 text-gray-700">{child.name}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
         });
     };
 
@@ -203,15 +233,11 @@ export default function EditProductPage() {
 
                         {/* Category */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Category</label>
-                            <select
-                                value={formData.category}
-                                onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            >
-                                <option value="">Select a Category...</option>
-                                {renderCategoryOptions()}
-                            </select>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Categories</label>
+                            <div className="border border-gray-300 rounded-md p-4 max-h-60 overflow-y-auto bg-white">
+                                {renderCategoryCheckboxes()}
+                            </div>
+                            <p className="mt-1 text-xs text-gray-500">Select all that apply</p>
                         </div>
 
                         {/* Variants (Sizes & Prices) */}
