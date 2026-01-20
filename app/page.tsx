@@ -30,8 +30,8 @@ async function getProducts() {
 
 async function getCategoriesWithImages() {
   await dbConnect();
-  // Fetch top-level categories
-  const categories = await Category.find({ parent: null }).lean();
+  // Fetch all categories to include subcategories like "Canvas Prints"
+  const categories = await Category.find({}).lean();
 
   const categoriesWithImages = await Promise.all(categories.map(async (cat: any) => {
     // Find a product in this category (checking both new 'categories' array and legacy 'category' field)
