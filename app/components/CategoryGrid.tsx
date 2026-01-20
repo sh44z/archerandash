@@ -28,10 +28,10 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-6 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
+                <div className="grid grid-cols-2 gap-4 sm:gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
                     {categories.map((category) => (
                         <Link key={category.id} href={`/shop?category=${category.id}`} className="group">
-                            <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8 relative h-64 shadow-md transition-shadow hover:shadow-xl">
+                            <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8 relative h-32 sm:h-64 shadow-md transition-shadow hover:shadow-xl">
                                 <img
                                     src={category.imageUrl}
                                     alt={category.name}
@@ -41,7 +41,7 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
                                     }}
                                 />
                                 <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center group-hover:bg-opacity-30 transition-all">
-                                    <h3 className="text-2xl font-bold text-white tracking-wider drop-shadow-md">
+                                    <h3 className="text-lg sm:text-2xl font-bold text-white tracking-wider drop-shadow-md text-center px-2">
                                         {category.name}
                                     </h3>
                                 </div>
