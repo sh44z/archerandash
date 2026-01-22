@@ -42,6 +42,13 @@ export async function GET() {
 
             if (!imageLink) return ''; // Google requires an image
 
+            // Get additional images
+            const additionalImages = product.images && product.images.length > 1
+                ? product.images.slice(1).map((img: string) =>
+                    `<g:additional_image_link>${normalizeDriveLink(img)}</g:additional_image_link>`
+                ).join('\n')
+                : '';
+
             return `
 <item>
 <g:id>${product._id}</g:id>
@@ -49,13 +56,20 @@ export async function GET() {
 <g:description><![CDATA[${product.description}]]></g:description>
 <g:link>${baseUrl}/product/${product._id}</g:link>
 <g:image_link>${imageLink}</g:image_link>
+${additionalImages}
 <g:condition>new</g:condition>
 <g:availability>in_stock</g:availability>
 <g:price>${price.toFixed(2)} GBP</g:price>
 <g:brand>Archer and Ash</g:brand>
+<g:mpn>${product._id}</g:mpn>
 <g:identifier_exists>no</g:identifier_exists>
 <g:item_group_id>${product._id}</g:item_group_id>
-<g:google_product_category>500044</g:google_product_category> 
+<g:google_product_category>500044</g:google_product_category>
+<g:shipping>
+  <g:country>GB</g:country>
+  <g:service>Standard</g:service>
+  <g:price>0.00 GBP</g:price>
+</g:shipping>
 </item>`;
         }).join('');
 
