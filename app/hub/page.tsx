@@ -41,13 +41,26 @@ interface Order {
     createdAt: string;
 }
 
-type TabType = 'products' | 'categories' | 'orders' | 'subscriptions';
+interface Contact {
+    _id: string;
+    name: string;
+    phone: string;
+    email: string;
+    reason: string;
+    message: string;
+    status: 'new' | 'read' | 'replied' | 'archived';
+    createdAt: string;
+}
+
+type TabType = 'products' | 'categories' | 'orders' | 'subscriptions' | 'contacts';
 
 export default function HubPage() {
     const [activeTab, setActiveTab] = useState<TabType>('products');
     const [products, setProducts] = useState<Product[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
+    const [contacts, setContacts] = useState<Contact[]>([]);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -79,11 +92,29 @@ export default function HubPage() {
         }
     };
 
+    const fetchContacts = async () => {
+        try {
+            const response = await fetch('/api/contact');
+            if (!response.ok) {
+                throw new Error('Failed to fetch contacts');
+            }
+            const data = await response.json();
+            setContacts(data.contacts || []);
+        } catch (error) {
+            console.error('Error fetching contacts:', error);
+            setError('Failed to load contacts');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         if (activeTab === 'products') {
             fetchProducts();
         } else if (activeTab === 'orders') {
             fetchOrders();
+        } else if (activeTab === 'contacts') {
+            fetchContacts();
         }
     }, [activeTab]);
 
@@ -203,6 +234,7 @@ export default function HubPage() {
                             { id: 'products', label: 'Products' },
                             { id: 'categories', label: 'Categories', href: '/hub/categories' },
                             { id: 'orders', label: 'Orders' },
+                            { id: 'contacts', label: 'Contact Forms' },
                             { id: 'subscriptions', label: 'Subscriptions', href: '/hub/subscriptions' }
                         ].map((tab) => (
                             <button
@@ -460,7 +492,122 @@ export default function HubPage() {
                         </div>
                     </div>
                 )}
-            </div>
+                {activeTab === 'contacts' && (
+                    <div>
+                        {error && (
+                            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                                {error}
+                                <button
+                                    onClick={() => setError('')}
+                                    className="float-right ml-4 font-bold"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Contacts List */}
+                            <div className="lg:col-span-2">
+                                <div className="bg-white rounded-lg shadow-sm border">
+                                    <div className="p-6 border-b">
+                                        <h2 className="text-xl font-semibold text-gray-900">
+                                            Contact Submissions ({contacts.length})
+                                        </h2>
+                                    </div>
+                                    <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+                                        {contacts.length === 0 ? (
+                                            <div className="p-6 text-center text-gray-500">
+                                                No contact submissions yet
+                                            </div>
+                                        ) : (
+                                            contacts.map((contact) => (
+                                                <div
+                                                    key={contact._id}
+                                                    className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
+                                                        selectedContact?._id === contact._id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                                                    }`}
+                                                    onClick={() => setSelectedContact(contact)}
+                                                >
+                                                    <div className="flex justify-between items-start">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-3 mb-2">
+                                                                <span className="font-medium text-gray-900">
+                                                                    {contact.name}
+                                                                </span>
+                                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                                                    contact.status === 'new' ? 'bg-yellow-100 text-yellow-800' :
+                                                                    contact.status === 'read' ? 'bg-blue-100 text-blue-800' :
+                                                                    contact.status === 'replied' ? 'bg-green-100 text-green-800' :
+                                                                    'bg-gray-100 text-gray-800'
+                                                                }`}>
+                                                                    {contact.status.toUpperCase()}
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-sm text-gray-600">
+                                                                <p className="font-medium text-gray-700">{contact.reason}</p>
+                                                                <p>{contact.email}</p>
+                                                                <p>{formatDate(contact.createdAt)}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Contact Details */}
+                            <div className="lg:col-span-1">
+                                {selectedContact ? (
+                                    <div className="bg-white rounded-lg shadow-sm border">
+                                        <div className="p-6 border-b">
+                                            <h2 className="text-xl font-semibold text-gray-900">
+                                                Contact Details
+                                            </h2>
+                                        </div>
+                                        <div className="p-6 space-y-6">
+                                            {/* Contact Info */}
+                                            <div>
+                                                <h3 className="font-medium text-gray-900 mb-2">Information</h3>
+                                                <div className="space-y-2 text-sm">
+                                                    <p><span className="font-medium">Name:</span> {selectedContact.name}</p>
+                                                    <p><span className="font-medium">Email:</span> <a href={`mailto:${selectedContact.email}`} className="text-indigo-600 hover:text-indigo-900">{selectedContact.email}</a></p>
+                                                    <p><span className="font-medium">Phone:</span> <a href={`tel:${selectedContact.phone}`} className="text-indigo-600 hover:text-indigo-900">{selectedContact.phone}</a></p>
+                                                    <p><span className="font-medium">Reason:</span> {selectedContact.reason}</p>
+                                                    <p><span className="font-medium">Date:</span> {formatDate(selectedContact.createdAt)}</p>
+                                                    <p><span className="font-medium">Status:</span>
+                                                        <span className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${
+                                                            selectedContact.status === 'new' ? 'bg-yellow-100 text-yellow-800' :
+                                                            selectedContact.status === 'read' ? 'bg-blue-100 text-blue-800' :
+                                                            selectedContact.status === 'replied' ? 'bg-green-100 text-green-800' :
+                                                            'bg-gray-100 text-gray-800'
+                                                        }`}>
+                                                            {selectedContact.status.toUpperCase()}
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* Message */}
+                                            <div>
+                                                <h3 className="font-medium text-gray-900 mb-2">Message</h3>
+                                                <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                                                    {selectedContact.message}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="bg-white rounded-lg shadow-sm border p-6 text-center text-gray-500">
+                                        Select a contact submission to view details
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}            </div>
         </div>
     );
 }
