@@ -13,48 +13,46 @@ interface PageProps {
     }>;
 }
 
+// Helper to safely get product
 async function getProduct(term: string) {
     await dbConnect();
 
     try {
-        let query;
-        let isId = mongoose.isValidObjectId(term);
+        let productDoc = null;
+        const isId = mongoose.Types.ObjectId.isValid(term);
 
         if (isId) {
-            query = { $or: [{ _id: term }, { slug: term }] };
-        } else {
-            query = { slug: term };
+            // Try ID first
+            productDoc = await Product.findById(term);
         }
 
-        // Must fetch document to support saving if needed
-        let productDoc = await Product.findOne(query);
+        // If not found by ID, try slug
+        if (!productDoc) {
+            productDoc = await Product.findOne({ slug: term });
+        }
 
         if (!productDoc) return null;
 
-        // Self-healing: If product has no slug, save it to generate one
+        // Self-healing: If ID lookup succeeded but no slug, save to generate one
         if (!productDoc.slug && productDoc.title) {
             try {
-                // The pre-save hook will generate the slug
                 await productDoc.save();
-                console.log(`Auto-generated slug for product ${productDoc._id}: ${productDoc.slug}`);
-            } catch (optError) {
-                console.error("Error auto-generating slug:", optError);
+                console.log(`Auto-generated slug for product ${productDoc._id}`);
+            } catch (e) {
+                console.error("Error auto-generating slug:", e);
             }
         }
 
-        // Convert to plain object for component
-        const product = productDoc.toObject ? productDoc.toObject() : productDoc;
-
-        // Populate category manually or via another query if needed, 
-        // strictly speaking toObject() doesn't populate if not called on query.
-        // Let's re-fetch populated to be clean, or populate the doc.
+        // Populate category
         await productDoc.populate('category', 'name slug');
-        const populatedProduct = productDoc.toObject();
+
+        // Use JSON serialization to ensure clean object for Next.js props
+        const populatedProduct = JSON.parse(JSON.stringify(productDoc));
 
         return {
             ...populatedProduct,
             _id: populatedProduct._id.toString(),
-            createdAt: populatedProduct.createdAt?.toISOString(),
+            createdAt: populatedProduct.createdAt ? new Date(populatedProduct.createdAt).toISOString() : null,
             images: populatedProduct.images || [],
             variants: populatedProduct.variants || [],
             category: populatedProduct.category ? {
@@ -81,9 +79,8 @@ export default async function ProductPage({ params }: PageProps) {
         notFound();
     }
 
-    // Redirect legacy ID URLs to slug URLs
-    // If user visited by ID (slug param is ID), and we have a valid slug now (product.slug), redirect.
-    if (mongoose.isValidObjectId(slug) && product.slug && slug !== product.slug) {
+    // Redirect legacy ID URLs to slug URLs if slug exists
+    if (mongoose.Types.ObjectId.isValid(slug) && product.slug && slug !== product.slug) {
         permanentRedirect(`/product/${product.slug}`);
     }
 
