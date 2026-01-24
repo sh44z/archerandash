@@ -38,7 +38,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     const [imgSrc, setImgSrc] = useState(imageUrl);
 
     return (
-        <Link href={`/product/${product._id}`} className="group block">
+        <Link href={`/product/${product.slug || product._id}`} className="group block">
             <div
                 className="relative aspect-[3/4] overflow-hidden bg-gray-100 rounded-sm flex items-center justify-center p-2 md:p-0"
                 onMouseEnter={() => setIsHovered(true)}

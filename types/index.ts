@@ -11,4 +11,5 @@ export interface Product {
     variants: ProductVariant[];
     images: string[];
     category?: string; // ID
+    slug?: string;
 }

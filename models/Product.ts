@@ -11,6 +11,7 @@ export interface IProduct extends Document {
     category?: mongoose.Types.ObjectId; // Deprecated in favor of categories
     categories?: mongoose.Types.ObjectId[];
     variants: { size: string; price: number }[];
+    slug: string;
 
     images: string[];
     createdAt: Date;
@@ -31,6 +32,7 @@ const ProductSchema: Schema = new Schema({
         size: { type: String, required: true },
         price: { type: Number, required: true }
     }],
+    slug: { type: String, required: false, unique: true, sparse: true },
 
     images: { type: [String], default: [] },
     createdAt: { type: Date, default: Date.now },
