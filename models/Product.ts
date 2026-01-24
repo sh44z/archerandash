@@ -38,5 +38,32 @@ const ProductSchema: Schema = new Schema({
     createdAt: { type: Date, default: Date.now },
 });
 
+ProductSchema.pre('save', async function (next) {
+    if (this.title && (this.isNew || this.isModified('title'))) {
+        if (!this.slug) {
+            let baseSlug = this.title.toString().toLowerCase()
+                .trim()
+                .replace(/\s+/g, '-')
+                .replace(/[^\w\-]+/g, '')
+                .replace(/\-\-+/g, '-')
+                .replace(/^-+/, '')
+                .replace(/-+$/, '');
+
+            let uniqueSlug = baseSlug;
+            let count = 1;
+
+            // Check for uniqueness
+            // Use type assertion or access via this.constructor
+            // @ts-ignore
+            while (await this.constructor.findOne({ slug: uniqueSlug, _id: { $ne: this._id } })) {
+                uniqueSlug = `${baseSlug}-${count}`;
+                count++;
+            }
+            this.slug = uniqueSlug;
+        }
+    }
+    next();
+});
+
 const Product: Model<IProduct> = mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema);
 export default Product;
