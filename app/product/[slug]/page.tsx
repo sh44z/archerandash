@@ -18,31 +18,54 @@ async function getProduct(term: string) {
 
     try {
         let query;
-        if (mongoose.isValidObjectId(term)) {
+        let isId = mongoose.isValidObjectId(term);
+
+        if (isId) {
             query = { $or: [{ _id: term }, { slug: term }] };
         } else {
             query = { slug: term };
         }
 
-        const product = await Product.findOne(query).populate('category', 'name slug').lean();
-        if (!product) return null;
+        // Must fetch document to support saving if needed
+        let productDoc = await Product.findOne(query);
 
-        // Serialize for client component
+        if (!productDoc) return null;
+
+        // Self-healing: If product has no slug, save it to generate one
+        if (!productDoc.slug && productDoc.title) {
+            try {
+                // The pre-save hook will generate the slug
+                await productDoc.save();
+                console.log(`Auto-generated slug for product ${productDoc._id}: ${productDoc.slug}`);
+            } catch (optError) {
+                console.error("Error auto-generating slug:", optError);
+            }
+        }
+
+        // Convert to plain object for component
+        const product = productDoc.toObject ? productDoc.toObject() : productDoc;
+
+        // Populate category manually or via another query if needed, 
+        // strictly speaking toObject() doesn't populate if not called on query.
+        // Let's re-fetch populated to be clean, or populate the doc.
+        await productDoc.populate('category', 'name slug');
+        const populatedProduct = productDoc.toObject();
+
         return {
-            ...product,
-            _id: product._id.toString(),
-            createdAt: product.createdAt?.toISOString(),
-            images: product.images || [],
-            variants: product.variants || [],
-            category: product.category ? {
+            ...populatedProduct,
+            _id: populatedProduct._id.toString(),
+            createdAt: populatedProduct.createdAt?.toISOString(),
+            images: populatedProduct.images || [],
+            variants: populatedProduct.variants || [],
+            category: populatedProduct.category ? {
                 // @ts-ignore
-                name: product.category.name,
+                name: populatedProduct.category.name,
                 // @ts-ignore
-                slug: product.category.slug,
+                slug: populatedProduct.category.slug,
                 // @ts-ignore
-                _id: product.category._id.toString()
-            } : undefined, // Handle populated category
-            slug: product.slug
+                _id: populatedProduct.category._id.toString()
+            } : undefined,
+            slug: populatedProduct.slug
         };
     } catch (error) {
         console.error("Error fetching product:", error);
@@ -58,7 +81,8 @@ export default async function ProductPage({ params }: PageProps) {
         notFound();
     }
 
-    // Redirect legacy ID URLs to slug URLs if slug exists
+    // Redirect legacy ID URLs to slug URLs
+    // If user visited by ID (slug param is ID), and we have a valid slug now (product.slug), redirect.
     if (mongoose.isValidObjectId(slug) && product.slug && slug !== product.slug) {
         permanentRedirect(`/product/${product.slug}`);
     }

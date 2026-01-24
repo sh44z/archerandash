@@ -39,7 +39,7 @@ const ProductSchema: Schema = new Schema({
 });
 
 ProductSchema.pre('save', async function () {
-    if (this.title && (this.isNew || this.isModified('title'))) {
+    if (this.title) {
         if (!this.slug) {
             let baseSlug = this.title.toString().toLowerCase()
                 .trim()
@@ -48,6 +48,8 @@ ProductSchema.pre('save', async function () {
                 .replace(/\-\-+/g, '-')
                 .replace(/^-+/, '')
                 .replace(/-+$/, '');
+
+            if (!baseSlug) baseSlug = 'product';
 
             let uniqueSlug = baseSlug;
             let count = 1;
