@@ -89,6 +89,9 @@ export async function generateMetadata({ params }: PageProps): Promise<import("n
     return {
         title: product.title,
         description: product.description?.substring(0, 160) || `Buy ${product.title} at Archer and Ash`,
+        alternates: {
+            canonical: `/product/${product._id}`
+        },
         openGraph: {
             title: product.title,
             description: product.description?.substring(0, 200),

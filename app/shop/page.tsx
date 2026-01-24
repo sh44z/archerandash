@@ -8,12 +8,12 @@ export const dynamic = 'force-dynamic';
 
 async function getProducts(categoryId?: string) {
   await dbConnect();
-  
+
   let query: any = {};
   if (categoryId) {
     query.category = categoryId;
   }
-  
+
   const products = await Product.find(query)
     .sort({ createdAt: -1 })
     .lean();
@@ -38,14 +38,14 @@ async function getCategories() {
   }));
 }
 
-export default async function ShopPage({ 
-  searchParams 
-}: { 
-  searchParams: Promise<{ category?: string; subcategory?: string }> 
+export default async function ShopPage({
+  searchParams
+}: {
+  searchParams: Promise<{ category?: string; subcategory?: string }>
 }) {
   const params = await searchParams;
   const categoryId = params.category || params.subcategory;
-  
+
   const [products, categories] = await Promise.all([
     getProducts(categoryId),
     getCategories()
@@ -54,7 +54,7 @@ export default async function ShopPage({
   // Organize categories into parent/child structure
   const parentCategories = categories.filter(c => !c.parent);
   const childCategories = categories.filter(c => c.parent);
-  
+
   const getCategoryName = (id: string) => {
     const cat = categories.find(c => c._id === id);
     return cat?.name || 'All Products';
@@ -70,18 +70,17 @@ export default async function ShopPage({
           <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 font-serif mb-6">
             {selectedCategoryName}
           </h1>
-          
+
           {/* Category Navigation */}
           <div className="space-y-4">
             {/* All Products Link */}
             <div>
-              <Link 
-                href="/shop" 
-                className={`inline-block px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  !categoryId 
-                    ? 'bg-indigo-600 text-white' 
+              <Link
+                href="/shop"
+                className={`inline-block px-4 py-2 rounded-md text-sm font-medium transition-colors ${!categoryId
+                    ? 'bg-indigo-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                  }`}
               >
                 All Products
               </Link>
@@ -90,20 +89,19 @@ export default async function ShopPage({
             {/* Parent Categories */}
             {parentCategories.map((parent) => {
               const children = childCategories.filter(c => c.parent === parent._id);
-              
+
               return (
                 <div key={parent._id} className="space-y-2">
                   <Link
                     href={`/shop?category=${parent._id}`}
-                    className={`inline-block px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      categoryId === parent._id
+                    className={`inline-block px-4 py-2 rounded-md text-sm font-medium transition-colors ${categoryId === parent._id
                         ? 'bg-indigo-600 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                      }`}
                   >
                     {parent.name}
                   </Link>
-                  
+
                   {/* Subcategories */}
                   {children.length > 0 && (
                     <div className="ml-6 flex flex-wrap gap-2">
@@ -111,11 +109,10 @@ export default async function ShopPage({
                         <Link
                           key={child._id}
                           href={`/shop?subcategory=${child._id}`}
-                          className={`inline-block px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                            categoryId === child._id
+                          className={`inline-block px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${categoryId === child._id
                               ? 'bg-indigo-100 text-indigo-700 border border-indigo-300'
                               : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
-                          }`}
+                            }`}
                         >
                           {child.name}
                         </Link>
@@ -145,4 +142,50 @@ export default async function ShopPage({
   );
 }
 
+export async function generateMetadata({
+  searchParams
+}: {
+  searchParams: Promise<{ category?: string; subcategory?: string }>
+}): Promise<import("next").Metadata> {
+  const params = await searchParams;
+  const categoryId = params.category || params.subcategory;
 
+  if (!categoryId) {
+    return {
+      title: "Shop All Products | Archer and Ash",
+      description: "Browse our complete collection of modern wall art and canvas prints.",
+      alternates: {
+        canonical: '/shop'
+      }
+    };
+  }
+
+  await dbConnect();
+  const category = await Category.findById(categoryId).lean();
+
+  if (!category) {
+    return {
+      title: "Shop | Archer and Ash",
+      alternates: {
+        canonical: '/shop'
+      }
+    };
+  }
+
+  const categoryName = category.name;
+  const canonicalPath = params.subcategory
+    ? `/shop?subcategory=${categoryId}`
+    : `/shop?category=${categoryId}`;
+
+  return {
+    title: `${categoryName} | Archer and Ash`,
+    description: `Shop our exclusive collection of ${categoryName} at Archer and Ash.`,
+    alternates: {
+      canonical: canonicalPath
+    },
+    openGraph: {
+      title: `${categoryName} | Archer and Ash`,
+      description: `Shop our exclusive collection of ${categoryName} at Archer and Ash.`,
+    }
+  };
+}
