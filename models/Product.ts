@@ -38,7 +38,7 @@ const ProductSchema: Schema = new Schema({
     createdAt: { type: Date, default: Date.now },
 });
 
-ProductSchema.pre('save', async function (next) {
+ProductSchema.pre('save', async function () {
     if (this.title && (this.isNew || this.isModified('title'))) {
         if (!this.slug) {
             let baseSlug = this.title.toString().toLowerCase()
@@ -62,7 +62,6 @@ ProductSchema.pre('save', async function (next) {
             this.slug = uniqueSlug;
         }
     }
-    next();
 });
 
 const Product: Model<IProduct> = mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema);
