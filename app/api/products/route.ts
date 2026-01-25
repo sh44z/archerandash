@@ -9,7 +9,20 @@ import mongoose from 'mongoose';
 export async function GET() {
     await dbConnect();
     const products = await Product.find({}).sort({ createdAt: -1 });
-    return NextResponse.json(products);
+    
+    // Transform products to ensure categories is always an array
+    const transformedProducts = products.map(product => {
+        const productObj = product.toObject ? product.toObject() : product;
+        
+        // If categories is empty but category exists, populate categories array
+        if ((!productObj.categories || productObj.categories.length === 0) && productObj.category) {
+            productObj.categories = [productObj.category];
+        }
+        
+        return productObj;
+    });
+    
+    return NextResponse.json(transformedProducts);
 }
 
 // POST - Protected
