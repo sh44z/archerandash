@@ -3,6 +3,7 @@ import dbConnect from '@/lib/db';
 import Product from '@/models/Product';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import mongoose from 'mongoose';
 
 // GET - Public (get single product)
 export async function GET(
@@ -22,7 +23,10 @@ export async function GET(
             ...product,
             _id: product._id.toString(),
             createdAt: product.createdAt?.toISOString(),
-            category: product.category ? product.category.toString() : undefined
+            category: product.category ? product.category.toString() : undefined,
+            categories: (product.categories || []).map((cat: any) => 
+                cat._id ? cat._id.toString() : cat.toString()
+            )
         });
     } catch (error) {
         console.error(error);
@@ -47,6 +51,16 @@ export async function PUT(
         await dbConnect();
         const { id } = await params;
         const body = await req.json();
+
+        // Convert category IDs to ObjectIds if they are strings
+        if (body.categories && Array.isArray(body.categories)) {
+            body.categories = body.categories.map((id: string | mongoose.Types.ObjectId) => 
+                typeof id === 'string' ? new mongoose.Types.ObjectId(id) : id
+            );
+        }
+        if (body.category && typeof body.category === 'string') {
+            body.category = new mongoose.Types.ObjectId(body.category);
+        }
         
         const product = await Product.findByIdAndUpdate(
             id,
@@ -62,7 +76,10 @@ export async function PUT(
             ...product,
             _id: product._id.toString(),
             createdAt: product.createdAt?.toISOString(),
-            category: product.category ? product.category.toString() : undefined
+            category: product.category ? product.category.toString() : undefined,
+            categories: (product.categories || []).map((cat: any) => 
+                cat._id ? cat._id.toString() : cat.toString()
+            )
         });
     } catch (error) {
         console.error(error);
