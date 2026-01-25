@@ -45,8 +45,10 @@ export async function POST(req: Request) {
                 typeof id === 'string' ? new mongoose.Types.ObjectId(id) : id
             );
         }
-        if (body.category && typeof body.category === 'string') {
-            body.category = new mongoose.Types.ObjectId(body.category);
+        
+        // Don't save single category field if categories array exists
+        if (body.categories && body.categories.length > 0) {
+            delete body.category;
         }
 
         const product = await Product.create(body);

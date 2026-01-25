@@ -87,7 +87,6 @@ export default function NewProductPage() {
             title: formData.title,
             description: formData.description,
             categories: formData.categories,
-            category: formData.categories[0] || undefined, // Fallback for legacy
             variants: variants.map(v => ({
                 size: v.size,
                 price: parseFloat(v.price)
