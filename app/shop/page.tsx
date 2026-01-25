@@ -3,6 +3,7 @@ import Product from '@/models/Product';
 import Category from '@/models/Category';
 import dbConnect from '@/lib/db';
 import Link from 'next/link';
+import mongoose from 'mongoose';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +12,13 @@ async function getProducts(categoryId?: string) {
 
   let query: any = {};
   if (categoryId) {
-    query.category = categoryId;
+    // Convert string to ObjectId if needed
+    try {
+      const objectId = new mongoose.Types.ObjectId(categoryId);
+      query.categories = { $in: [objectId] };
+    } catch {
+      query.categories = { $in: [] };
+    }
   }
 
   const products = await Product.find(query)
@@ -24,7 +31,8 @@ async function getProducts(categoryId?: string) {
     createdAt: p.createdAt?.toISOString(),
     variants: p.variants || [],
     images: p.images || [],
-    category: p.category ? p.category.toString() : undefined
+    categories: (p.categories || []).map((c: any) => c.toString()),
+    category: p.category ? p.category.toString() : (p.categories && p.categories[0] ? p.categories[0].toString() : undefined)
   }));
 }
 

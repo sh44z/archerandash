@@ -8,19 +8,20 @@ import mongoose from 'mongoose';
 // GET - Public
 export async function GET() {
     await dbConnect();
-    const products = await Product.find({}).sort({ createdAt: -1 });
+    const products = await Product.find({}).sort({ createdAt: -1 }).lean();
     
-    // Transform products to ensure categories is always an array
-    const transformedProducts = products.map(product => {
-        const productObj = product.toObject ? product.toObject() : product;
-        
-        // If categories is empty but category exists, populate categories array
-        if ((!productObj.categories || productObj.categories.length === 0) && productObj.category) {
-            productObj.categories = [productObj.category];
-        }
-        
-        return productObj;
-    });
+    // Transform products to properly serialize ObjectIds
+    const transformedProducts = products.map((product: any) => ({
+        ...product,
+        _id: product._id.toString(),
+        createdAt: product.createdAt?.toISOString?.(),
+        categories: (product.categories || []).map((c: any) => 
+            c._id ? c._id.toString() : c.toString()
+        ),
+        category: product.category ? product.category.toString() : undefined,
+        variants: product.variants || [],
+        images: product.images || []
+    }));
     
     return NextResponse.json(transformedProducts);
 }
