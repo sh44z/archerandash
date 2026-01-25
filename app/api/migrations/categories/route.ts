@@ -101,16 +101,20 @@ export async function POST(req: Request) {
                     { new: true }
                 );
                 
-                results.push({
-                    productId: product._id.toString(),
-                    title: product.title,
-                    oldCategory: product.category.toString(),
-                    newCategories: updated.categories.map((cat: any) => cat.toString()),
-                    status: 'success'
-                });
-                
-                successCount++;
-                console.log(`[Migration] ✓ Migrated ${product.title}`);
+                if (updated) {
+                    results.push({
+                        productId: product._id.toString(),
+                        title: product.title,
+                        oldCategory: product.category ? product.category.toString() : 'none',
+                        newCategories: (updated.categories || []).map((cat: any) => cat.toString()),
+                        status: 'success'
+                    });
+                    
+                    successCount++;
+                    console.log(`[Migration] ✓ Migrated ${product.title}`);
+                } else {
+                    throw new Error('Product update returned null');
+                }
             } catch (err) {
                 errorCount++;
                 results.push({
