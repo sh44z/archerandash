@@ -4,6 +4,7 @@ import Product from '@/models/Product';
 import Category from '@/models/Category';
 import ProductCard from '@/app/components/ProductCard';
 import { Metadata } from 'next';
+import mongoose from 'mongoose';
 
 interface PageProps {
     params: Promise<{
@@ -26,10 +27,17 @@ async function getCategory(slug: string) {
 
 async function getProductsInCollection(categoryId: string) {
     await dbConnect();
+    // Convert string ID back to ObjectId
+    let objectId: mongoose.Types.ObjectId;
+    try {
+        objectId = new mongoose.Types.ObjectId(categoryId);
+    } catch {
+        return [];
+    }
+
     // Find products in this category OR subcategories
-    // First get all subcats
-    const subcats = await Category.find({ parent: categoryId }).lean();
-    const catIds = [categoryId, ...subcats.map(c => c._id)];
+    const subcats = await Category.find({ parent: objectId }).lean();
+    const catIds = [objectId, ...subcats.map(c => c._id)];
 
     const products = await Product.find({
         $or: [
