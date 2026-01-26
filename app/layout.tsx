@@ -27,6 +27,11 @@ export const metadata: Metadata = {
   keywords: ["wall art", "canvas prints", "posters", "home decor", "modern art", "abstract art", "interior design"],
   authors: [{ name: "Archer and Ash" }],
   creator: "Archer and Ash",
+  icons: {
+    icon: "/images/logo.jpg",
+    shortcut: "/images/logo.jpg",
+    apple: "/images/logo.jpg",
+  },
   openGraph: {
     type: "website",
     locale: "en_GB",
