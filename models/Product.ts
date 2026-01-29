@@ -13,6 +13,11 @@ export interface IProduct extends Document {
     variants: { size: string; price: number }[];
     slug: string;
 
+    // SEO
+    metaTitle?: string;
+    metaDescription?: string;
+    keywords?: string;
+
     images: string[];
     createdAt: Date;
 }
@@ -33,6 +38,11 @@ const ProductSchema: Schema = new Schema({
         price: { type: Number, required: true }
     }],
     slug: { type: String, required: false, unique: true, sparse: true },
+
+    // SEO
+    metaTitle: { type: String },
+    metaDescription: { type: String },
+    keywords: { type: String },
 
     images: { type: [String], default: [] },
     createdAt: { type: Date, default: Date.now },

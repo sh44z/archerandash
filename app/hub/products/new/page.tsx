@@ -17,6 +17,10 @@ export default function NewProductPage() {
         description: '',
         categories: [] as string[],
         images: ['', '', '', '', '', ''],
+        // SEO
+        metaTitle: '',
+        metaDescription: '',
+        keywords: ''
     });
 
     // Variants state
@@ -96,6 +100,10 @@ export default function NewProductPage() {
             sizes: variants.map(v => v.size),
 
             images: formData.images.map(normalizeDriveLink).filter(img => img.trim() !== ''),
+
+            metaTitle: formData.metaTitle,
+            metaDescription: formData.metaDescription,
+            keywords: formData.keywords
         };
 
         const res = await fetch('/api/products', {
@@ -250,6 +258,29 @@ export default function NewProductPage() {
                         </div>
                     </div>
 
+                    {/* SEO */}
+                    <div className="border-t border-gray-200 pt-6">
+                        <h2 className="text-lg font-medium text-gray-900 mb-4">SEO Settings</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Meta Title</label>
+                                <p className="text-xs text-gray-500 mb-1">Optional. Overrides the product title in search results.</p>
+                                <input type="text" value={formData.metaTitle} onChange={e => setFormData({ ...formData, metaTitle: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Meta Description</label>
+                                <p className="text-xs text-gray-500 mb-1">Optional. Recommended for SEO.</p>
+                                <textarea rows={3} value={formData.metaDescription} onChange={e => setFormData({ ...formData, metaDescription: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Keywords</label>
+                                <p className="text-xs text-gray-500 mb-1">Comma separated list of keywords.</p>
+                                <input type="text" value={formData.keywords} onChange={e => setFormData({ ...formData, keywords: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                            </div>
+                        </div>
+                    </div>
+
+
                     <div className="flex justify-end pt-4">
                         <button type="button" onClick={() => router.back()} className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 mr-3">Cancel</button>
                         <button type="submit" disabled={loading} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -257,7 +288,7 @@ export default function NewProductPage() {
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

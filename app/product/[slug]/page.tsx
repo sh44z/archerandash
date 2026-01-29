@@ -145,21 +145,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const mainImage = product.images?.[0] || "";
 
     return {
-        title: product.title,
-        description: product.description?.substring(0, 160) || `Buy ${product.title} at Archer and Ash`,
+        title: product.metaTitle || product.title,
+        description: (product.metaDescription || product.description)?.substring(0, 160) || `Buy ${product.title} at Archer and Ash`,
+        keywords: product.keywords ? product.keywords.split(',').map((k: string) => k.trim()) : undefined,
         alternates: {
             canonical: `/product/${product.slug || product._id}`
         },
         openGraph: {
-            title: product.title,
-            description: product.description?.substring(0, 200),
+            title: product.metaTitle || product.title,
+            description: (product.metaDescription || product.description)?.substring(0, 200),
             images: mainImage ? [{ url: mainImage }] : [],
             type: 'article'
         },
         twitter: {
             card: 'summary_large_image',
-            title: product.title,
-            description: product.description?.substring(0, 200),
+            title: product.metaTitle || product.title,
+            description: (product.metaDescription || product.description)?.substring(0, 200),
             images: mainImage ? [mainImage] : [],
         }
     };
