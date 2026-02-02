@@ -15,7 +15,7 @@ export default function AboutPage() {
                     {/* Story Section */}
                     <section>
                         <p className="text-base leading-relaxed">
-                            Founded in London in 2026 by Shehzad, <span className="font-semibold">Archer and Ash</span> was born out of a simple observation: interior designers and decorators need more than just a marketplace—they need a source of inspiration.
+                            Founded in London in 2026 by Shehzad Khan, <span className="font-semibold">Archer and Ash</span> was born out of a simple observation: interior designers and decorators need more than just a marketplace—they need a source of inspiration.
                         </p>
                         <p className="text-base leading-relaxed">
                             In a world saturated with generic decor, finding that one "hero piece" that pulls a room together can be an exhaustive search. We built Archer and Ash to be the definitive shortcut for the creative professional. We provide a highly curated gallery of artwork designed to complement sophisticated aesthetics, whether you are styling a minimalist loft in Shoreditch or a classic townhouse in Mayfair.
@@ -78,7 +78,7 @@ export default function AboutPage() {
                         <p className="text-lg text-gray-900 italic">
                             "Art is the soul of the home. Archer and Ash exists to help you find that soul, effortlessly."
                         </p>
-                        <p className="text-gray-700 font-semibold mt-4">— Shehzad, Founder</p>
+                        <p className="text-gray-700 font-semibold mt-4">— Shehzad Khan, Founder</p>
                     </section>
 
                     {/* Call to Action Section */}

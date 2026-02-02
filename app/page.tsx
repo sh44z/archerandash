@@ -73,7 +73,7 @@ export default async function Home() {
       <div id="products" className="max-w-2xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
         <div className="mb-12 text-center max-w-3xl mx-auto">
           <p className="text-lg text-gray-600 leading-relaxed font-light">
-            Transform your space with our curated collection of diverse
+            Transform your space with our collection of diverse
             <span className="font-medium text-gray-900"> wall arts</span>,
             premium <span className="font-medium text-gray-900">posters</span>, and
             stunning <span className="font-medium text-gray-900">canvas prints</span>.

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Analytics } from '@vercel/analytics/react';
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
     default: "Archer and Ash | Modern Canvas Art & Wall Decor",
     template: "%s | Archer and Ash"
   },
-  description: "Discover unique wall arts, posters, and canvas prints for modern living. Archer and Ash offers curated art pieces to elevate your home decor.",
+  description: "Discover unique wall arts, posters, and canvas prints for modern living. Archer and Ash offers art pieces to elevate your home decor.",
   keywords: ["wall art", "canvas prints", "posters", "home decor", "modern art", "abstract art", "interior design"],
   authors: [{ name: "Archer and Ash" }],
   creator: "Archer and Ash",
@@ -90,6 +91,19 @@ export default function RootLayout({
           </div>
         </Providers>
         <Analytics />
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-JE6KDQ1DHQ"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-JE6KDQ1DHQ');
+          `}
+        </Script>
       </body>
     </html>
   );
