@@ -72,6 +72,7 @@ export const metadata: Metadata = {
 };
 
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import { Providers } from "./providers";
 
 export default function RootLayout({
@@ -86,8 +87,11 @@ export default function RootLayout({
       >
         <Providers>
           <Navbar />
-          <div className="pt-16">
-            {children}
+          <div className="pt-16 min-h-screen flex flex-col">
+            <main className="flex-grow">
+              {children}
+            </main>
+            <Footer />
           </div>
         </Providers>
         <Analytics />
