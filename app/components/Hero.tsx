@@ -85,7 +85,7 @@ export default function Hero({ products = [] }: HeroProps) {
                     <img
                         src={imgSrc}
                         alt="Product"
-                        className="w-full h-full object-cover md:object-fill object-center"
+                        className="w-full h-full object-cover md:object-contain md:scale-x-[2] object-center"
                         onError={() => setImgSrc('https://via.placeholder.com/800x600?text=No+Image')}
                     />
                     <div className="absolute inset-0 flex flex-col items-center justify-end pb-6 sm:pb-8 md:pb-10">
