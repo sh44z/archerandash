@@ -20,14 +20,14 @@ export default function Hero({ products = [] }: HeroProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [imgSrc, setImgSrc] = useState('');
 
-    // Create a flat array of all product images
+    // Create a flat array of all product images, taking only the first one
     const allImages = products.flatMap((p) =>
         p.images && p.images.length > 0
-            ? p.images.map((img) => ({
-                url: img,
+            ? [{
+                url: p.images[0],
                 productId: p._id,
                 productTitle: p.title,
-            }))
+            }]
             : []
     );
 
@@ -72,7 +72,7 @@ export default function Hero({ products = [] }: HeroProps) {
 
 
     return (
-        <div className="relative h-[22rem] sm:h-[28rem] md:h-[30rem] lg:h-[34rem] xl:h-[38rem] 2xl:h-[42rem] overflow-hidden">
+        <div className="relative h-[22rem] sm:h-[28rem] md:h-[30rem] lg:h-[34rem] xl:h-[38rem] 2xl:h-[42rem] overflow-hidden bg-gray-50">
             <AnimatePresence mode='wait'>
                 <motion.div
                     key={currentImageIndex}
@@ -85,7 +85,7 @@ export default function Hero({ products = [] }: HeroProps) {
                     <img
                         src={imgSrc}
                         alt="Product"
-                        className="w-full h-full object-cover object-center"
+                        className="w-full h-full object-cover md:object-contain object-center"
                         onError={() => setImgSrc('https://via.placeholder.com/800x600?text=No+Image')}
                     />
                     <div className="absolute inset-0 flex flex-col items-center justify-end pb-6 sm:pb-8 md:pb-10">
