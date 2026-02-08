@@ -31,23 +31,22 @@ const BlogPostSchema: Schema = new Schema({
 });
 
 // Auto-update updatedAt
-BlogPostSchema.pre('save', function (next) {
+// Auto-update updatedAt
+BlogPostSchema.pre('save', async function (this: IBlogPost) {
     this.updatedAt = new Date();
     if (this.status === 'published' && !this.publishedAt) {
         this.publishedAt = new Date();
     }
-    next();
 });
 
 // Auto-generate slug from title if not provided
-BlogPostSchema.pre('validate', function (next) {
+BlogPostSchema.pre('validate', async function (this: IBlogPost) {
     if (this.title && !this.slug) {
         this.slug = this.title
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/(^-|-$)+/g, '');
     }
-    next();
 });
 
 const BlogPost: Model<IBlogPost> = mongoose.models.BlogPost || mongoose.model<IBlogPost>('BlogPost', BlogPostSchema);

@@ -52,7 +52,7 @@ export async function POST(request: Request) {
             content: data.content,
             coverImage: data.coverImage,
             status: data.status || 'published',
-            author: user.email || 'Admin', // Use email or a default
+            author: (user as any).email || 'Admin', // Use email or a default
         });
 
         return NextResponse.json(newPost, { status: 201 });
