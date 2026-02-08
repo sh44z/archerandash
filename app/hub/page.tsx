@@ -7,7 +7,16 @@ interface Product {
     _id: string;
     title: string;
     price?: number;
+
     variants?: { size: string; price: number }[];
+}
+
+interface BlogPost {
+    _id: string;
+    title: string;
+    slug: string;
+    status: 'draft' | 'published';
+    createdAt: string;
 }
 
 interface Order {
@@ -52,13 +61,16 @@ interface Contact {
     createdAt: string;
 }
 
-type TabType = 'products' | 'categories' | 'orders' | 'subscriptions' | 'contacts';
+
+type TabType = 'products' | 'categories' | 'orders' | 'subscriptions' | 'contacts' | 'inspiration';
+
 
 export default function HubPage() {
     const [activeTab, setActiveTab] = useState<TabType>('products');
     const [products, setProducts] = useState<Product[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
     const [contacts, setContacts] = useState<Contact[]>([]);
+    const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [loading, setLoading] = useState(true);
@@ -108,6 +120,22 @@ export default function HubPage() {
         }
     };
 
+    const fetchBlogPosts = async () => {
+        try {
+            const response = await fetch('/api/blog');
+            if (!response.ok) {
+                throw new Error('Failed to fetch blog posts');
+            }
+            const data = await response.json();
+            setBlogPosts(data);
+        } catch (error) {
+            console.error('Error fetching blog posts:', error);
+            setError('Failed to load blog posts');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         if (activeTab === 'products') {
             fetchProducts();
@@ -115,6 +143,8 @@ export default function HubPage() {
             fetchOrders();
         } else if (activeTab === 'contacts') {
             fetchContacts();
+        } else if (activeTab === 'inspiration') {
+            fetchBlogPosts();
         }
     }, [activeTab]);
 
@@ -138,6 +168,28 @@ export default function HubPage() {
         } catch (error) {
             console.error('Delete error:', error);
             alert('Failed to delete product. Please try again.');
+        }
+    };
+
+    const handleDeletePost = async (postId: string, postTitle: string) => {
+        if (!confirm(`Are you sure you want to delete "${postTitle}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/blog/${postId}`, {
+                method: 'DELETE',
+            });
+
+            if (res.ok) {
+                setBlogPosts(blogPosts.filter(p => p._id !== postId));
+            } else {
+                const error = await res.json();
+                alert(`Failed to delete post: ${error.error || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert('Failed to delete post. Please try again.');
         }
     };
 
@@ -224,6 +276,11 @@ export default function HubPage() {
                         <Link href="/hub/products/new" className="text-sm sm:text-base bg-indigo-600 text-white px-3 sm:px-4 py-2 rounded-md hover:bg-indigo-700 whitespace-nowrap">
                             + Add Product
                         </Link>
+                        {activeTab === 'inspiration' && (
+                            <Link href="/hub/inspiration/new" className="text-sm sm:text-base bg-indigo-600 text-white px-3 sm:px-4 py-2 rounded-md hover:bg-indigo-700 whitespace-nowrap">
+                                + Add Post
+                            </Link>
+                        )}
                     </div>
                 </div>
 
@@ -235,7 +292,8 @@ export default function HubPage() {
                             { id: 'categories', label: 'Categories', href: '/hub/categories' },
                             { id: 'orders', label: 'Orders' },
                             { id: 'contacts', label: 'Contact Forms' },
-                            { id: 'subscriptions', label: 'Subscriptions', href: '/hub/subscriptions' }
+                            { id: 'subscriptions', label: 'Subscriptions', href: '/hub/subscriptions' },
+                            { id: 'inspiration', label: 'Inspiration' }
                         ].map((tab) => (
                             <button
                                 key={tab.id}
@@ -246,11 +304,10 @@ export default function HubPage() {
                                         setActiveTab(tab.id as TabType);
                                     }
                                 }}
-                                className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
-                                    activeTab === tab.id
-                                        ? 'border-indigo-500 text-indigo-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                }`}
+                                className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
+                                    ? 'border-indigo-500 text-indigo-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    }`}
                             >
                                 {tab.label}
                             </button>
@@ -314,6 +371,51 @@ export default function HubPage() {
                     </div>
                 )}
 
+                {activeTab === 'inspiration' && (
+                    <div className="bg-white shadow rounded-lg overflow-hidden">
+                        <div className="px-6 py-4 border-b border-gray-200">
+                            <h2 className="text-lg font-medium text-gray-900">Blog Posts (Inspiration)</h2>
+                        </div>
+                        <ul className="divide-y divide-gray-200">
+                            {loading ? (
+                                <li className="px-6 py-4 text-center">Loading...</li>
+                            ) : blogPosts.length === 0 ? (
+                                <li className="px-6 py-4 text-center text-gray-500">No posts found. Create one!</li>
+                            ) : (
+                                blogPosts.map((post) => (
+                                    <li key={post._id} className="px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="text-sm font-medium text-gray-900 truncate">{post.title}</h3>
+                                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${post.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                                    }`}>
+                                                    {post.status.toUpperCase()}
+                                                </span>
+                                                <span>•</span>
+                                                <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+                                            <Link
+                                                href={`/hub/inspiration/${post._id}`}
+                                                className="text-indigo-600 hover:text-indigo-900 text-sm font-medium whitespace-nowrap"
+                                            >
+                                                Edit
+                                            </Link>
+                                            <button
+                                                onClick={() => handleDeletePost(post._id, post.title)}
+                                                className="text-red-600 hover:text-red-900 text-sm font-medium whitespace-nowrap"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </li>
+                                ))
+                            )}
+                        </ul>
+                    </div>
+                )}
+
                 {activeTab === 'orders' && (
                     <div>
                         {error && (
@@ -346,9 +448,8 @@ export default function HubPage() {
                                             orders.map((order) => (
                                                 <div
                                                     key={order._id}
-                                                    className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                                                        selectedOrder?._id === order._id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
-                                                    }`}
+                                                    className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${selectedOrder?._id === order._id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                                                        }`}
                                                     onClick={() => setSelectedOrder(order)}
                                                 >
                                                     <div className="flex justify-between items-start">
@@ -524,9 +625,8 @@ export default function HubPage() {
                                             contacts.map((contact) => (
                                                 <div
                                                     key={contact._id}
-                                                    className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                                                        selectedContact?._id === contact._id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
-                                                    }`}
+                                                    className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${selectedContact?._id === contact._id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                                                        }`}
                                                     onClick={() => setSelectedContact(contact)}
                                                 >
                                                     <div className="flex justify-between items-start">
@@ -535,12 +635,11 @@ export default function HubPage() {
                                                                 <span className="font-medium text-gray-900">
                                                                     {contact.name}
                                                                 </span>
-                                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                                                    contact.status === 'new' ? 'bg-yellow-100 text-yellow-800' :
+                                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${contact.status === 'new' ? 'bg-yellow-100 text-yellow-800' :
                                                                     contact.status === 'read' ? 'bg-blue-100 text-blue-800' :
-                                                                    contact.status === 'replied' ? 'bg-green-100 text-green-800' :
-                                                                    'bg-gray-100 text-gray-800'
-                                                                }`}>
+                                                                        contact.status === 'replied' ? 'bg-green-100 text-green-800' :
+                                                                            'bg-gray-100 text-gray-800'
+                                                                    }`}>
                                                                     {contact.status.toUpperCase()}
                                                                 </span>
                                                             </div>
@@ -578,12 +677,11 @@ export default function HubPage() {
                                                     <p><span className="font-medium">Reason:</span> {selectedContact.reason}</p>
                                                     <p><span className="font-medium">Date:</span> {formatDate(selectedContact.createdAt)}</p>
                                                     <p><span className="font-medium">Status:</span>
-                                                        <span className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${
-                                                            selectedContact.status === 'new' ? 'bg-yellow-100 text-yellow-800' :
+                                                        <span className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${selectedContact.status === 'new' ? 'bg-yellow-100 text-yellow-800' :
                                                             selectedContact.status === 'read' ? 'bg-blue-100 text-blue-800' :
-                                                            selectedContact.status === 'replied' ? 'bg-green-100 text-green-800' :
-                                                            'bg-gray-100 text-gray-800'
-                                                        }`}>
+                                                                selectedContact.status === 'replied' ? 'bg-green-100 text-green-800' :
+                                                                    'bg-gray-100 text-gray-800'
+                                                            }`}>
                                                             {selectedContact.status.toUpperCase()}
                                                         </span>
                                                     </p>
