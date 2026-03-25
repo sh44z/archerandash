@@ -62,7 +62,7 @@ interface Contact {
 }
 
 
-type TabType = 'products' | 'categories' | 'orders' | 'subscriptions' | 'contacts' | 'inspiration';
+type TabType = 'products' | 'categories' | 'orders' | 'subscriptions' | 'contacts' | 'inspiration' | 'discount-codes';
 
 
 export default function HubPage() {
@@ -71,6 +71,7 @@ export default function HubPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+    const [discountCodes, setDiscountCodes] = useState<any[]>([]);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [loading, setLoading] = useState(true);
@@ -145,6 +146,8 @@ export default function HubPage() {
             fetchContacts();
         } else if (activeTab === 'inspiration') {
             fetchBlogPosts();
+        } else if (activeTab === 'discount-codes') {
+            fetch('/api/discount-codes').then(res => res.json()).then(data => { setDiscountCodes(data); setLoading(false); }).catch(console.error);
         }
     }, [activeTab]);
 
@@ -293,7 +296,8 @@ export default function HubPage() {
                             { id: 'orders', label: 'Orders' },
                             { id: 'contacts', label: 'Contact Forms' },
                             { id: 'subscriptions', label: 'Subscriptions', href: '/hub/subscriptions' },
-                            { id: 'inspiration', label: 'Inspiration' }
+                            { id: 'inspiration', label: 'Inspiration' },
+                            { id: 'discount-codes', label: 'Discount Codes' }
                         ].map((tab) => (
                             <button
                                 key={tab.id}
@@ -705,7 +709,82 @@ export default function HubPage() {
                             </div>
                         </div>
                     </div>
-                )}            </div>
+                )}
+                {activeTab === 'discount-codes' && (
+                    <div className="bg-white shadow rounded-lg overflow-hidden p-6 mt-8">
+                        <div className="border-b border-gray-200 pb-4 mb-4 flex justify-between items-center">
+                            <h2 className="text-lg font-medium text-gray-900">Discount Codes</h2>
+                        </div>
+                        <form onSubmit={async (e) => {
+                            e.preventDefault();
+                            const formData = new FormData(e.currentTarget);
+                            const res = await fetch('/api/discount-codes', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    code: formData.get('code'),
+                                    discountType: formData.get('discountType'),
+                                    discountValue: formData.get('discountValue'),
+                                })
+                            });
+                            if (res.ok) {
+                                (e.target as HTMLFormElement).reset();
+                                fetch('/api/discount-codes').then(r => r.json()).then(setDiscountCodes);
+                            } else {
+                                const error = await res.json();
+                                alert(error.error || 'Failed to create discount code');
+                            }
+                        }} className="mb-8 bg-gray-50 p-4 rounded-lg flex gap-4 items-end flex-wrap">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Code</label>
+                                <input type="text" name="code" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white" placeholder="e.g. SAVE20" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Type</label>
+                                <select name="discountType" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white">
+                                    <option value="percentage">Percentage (%)</option>
+                                    <option value="fixed">Fixed Amount (£)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Value</label>
+                                <input type="number" name="discountValue" required min="1" step="0.01" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white" placeholder="e.g. 20" />
+                            </div>
+                            <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 h-9 mb-0.5">
+                                Add Code
+                            </button>
+                        </form>
+
+                        <ul className="divide-y divide-gray-200">
+                            {discountCodes.length === 0 ? (
+                                <li className="py-4 text-center text-gray-500">No discount codes found.</li>
+                            ) : (
+                                discountCodes.map((dc) => (
+                                    <li key={dc._id} className="py-4 flex justify-between items-center">
+                                        <div>
+                                            <h3 className="text-sm font-bold text-gray-900">{dc.code}</h3>
+                                            <p className="text-sm text-gray-500">
+                                                {dc.discountType === 'percentage' ? `${dc.discountValue}% off` : `£${dc.discountValue} off`}
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={async () => {
+                                                if (confirm('Delete this code?')) {
+                                                    const res = await fetch(`/api/discount-codes/${dc._id}`, { method: 'DELETE' });
+                                                    if (res.ok) fetch('/api/discount-codes').then(r => r.json()).then(setDiscountCodes);
+                                                }
+                                            }}
+                                            className="text-red-600 hover:text-red-900 text-sm font-medium"
+                                        >
+                                            Delete
+                                        </button>
+                                    </li>
+                                ))
+                            )}
+                        </ul>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

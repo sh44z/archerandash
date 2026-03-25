@@ -68,7 +68,7 @@ export default async function BlogPostPage(props: PageProps) {
             {/* Hero Image */}
             <div className="w-full h-64 md:h-96 relative">
                 <img
-                    src={post.coverImage}
+                    src={post.coverImage?.replace(/\\/g, '/').replace(/^(?!\/|http)/, '/')}
                     alt={post.title}
                     className="w-full h-full object-cover"
                 />

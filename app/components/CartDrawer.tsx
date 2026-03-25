@@ -7,19 +7,20 @@ import { useCart } from '@/context/CartContext';
 import { PayPalButtons } from '@paypal/react-paypal-js';
 
 export default function CartDrawer() {
-    const { isCartOpen, setIsCartOpen, items, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
+    const { isCartOpen, setIsCartOpen, items, removeFromCart, updateQuantity, cartTotal, clearCart, appliedDiscount, applyDiscount, removeDiscount, finalTotal } = useCart();
     const router = useRouter();
 
     // PayPal handling
     const createOrder = async () => {
         try {
-            console.log('Creating PayPal order with items:', items, 'total:', cartTotal);
+            console.log('Creating PayPal order with items:', items, 'total:', finalTotal);
             const response = await fetch('/api/paypal/create-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     cartItems: items,
-                    total: cartTotal
+                    total: finalTotal,
+                    discountCode: appliedDiscount?.code
                 })
             });
 
@@ -242,10 +243,55 @@ export default function CartDrawer() {
 
                                         {items.length > 0 && (
                                             <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
-                                                <div className="flex justify-between text-base font-medium text-gray-900">
-                                                    <p>Subtotal</p>
-                                                    <p>£{cartTotal.toFixed(2)}</p>
+                                                <div className="flex flex-col gap-4 mb-4">
+                                                    {appliedDiscount ? (
+                                                        <div className="flex justify-between items-center text-sm font-medium text-green-700 bg-green-50 p-3 rounded-md border border-green-200">
+                                                            <div>
+                                                                <span className="font-bold">{appliedDiscount.code}</span> applied
+                                                                <span className="ml-2 text-xs opacity-80">
+                                                                    (-{appliedDiscount.type === 'percentage' ? `${appliedDiscount.value}%` : `£${appliedDiscount.value}`})
+                                                                </span>
+                                                            </div>
+                                                            <button type="button" onClick={removeDiscount} className="text-red-600 hover:text-red-800 text-xs font-bold underline">Remove</button>
+                                                        </div>
+                                                    ) : (
+                                                        <form onSubmit={async (e) => {
+                                                            e.preventDefault();
+                                                            const form = e.currentTarget;
+                                                            const code = (form.elements.namedItem('discountCode') as HTMLInputElement).value;
+                                                            try {
+                                                                const res = await fetch('/api/discount-codes/validate', {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({ code })
+                                                                });
+                                                                const data = await res.json();
+                                                                if (data.valid) {
+                                                                    applyDiscount(code, data.discountType, data.discountValue);
+                                                                    form.reset();
+                                                                } else {
+                                                                    alert(data.error || 'Invalid code');
+                                                                }
+                                                            } catch (err) {
+                                                                alert('Error validating code');
+                                                            }
+                                                        }} className="flex gap-2">
+                                                            <input type="text" name="discountCode" placeholder="Discount code" className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" />
+                                                            <button type="submit" className="bg-gray-900 text-white px-4 py-2 rounded-md font-medium hover:bg-gray-800 text-sm">Apply</button>
+                                                        </form>
+                                                    )}
                                                 </div>
+
+                                                <div className="flex justify-between text-base font-medium text-gray-900 mb-2">
+                                                    <p>Subtotal</p>
+                                                    <p className={appliedDiscount ? "line-through text-gray-400" : ""}>£{cartTotal.toFixed(2)}</p>
+                                                </div>
+                                                {appliedDiscount && (
+                                                    <div className="flex justify-between text-lg font-bold text-gray-900 border-t pt-2 mt-2">
+                                                        <p>Total</p>
+                                                        <p>£{finalTotal.toFixed(2)}</p>
+                                                    </div>
+                                                )}
                                                 <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
 
                                                 <div className="mt-6">
@@ -255,7 +301,7 @@ export default function CartDrawer() {
                                                         onApprove={onApprove}
                                                         onError={onError}
                                                         onCancel={onCancel}
-                                                        forceReRender={[cartTotal, items.length]}
+                                                        forceReRender={[finalTotal, items.length]}
                                                         className="w-full"
                                                     />
                                                 </div>

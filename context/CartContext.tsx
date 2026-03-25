@@ -22,6 +22,10 @@ interface CartContextType {
     setIsCartOpen: (isOpen: boolean) => void;
     cartTotal: number;
     cartCount: number;
+    appliedDiscount: { code: string; type: 'percentage' | 'fixed'; value: number } | null;
+    applyDiscount: (code: string, type: 'percentage' | 'fixed', value: number) => void;
+    removeDiscount: () => void;
+    finalTotal: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -30,6 +34,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
+    const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; type: 'percentage' | 'fixed'; value: number } | null>(null);
+
+    const applyDiscount = (code: string, type: 'percentage' | 'fixed', value: number) => {
+        setAppliedDiscount({ code, type, value });
+    };
+
+    const removeDiscount = () => setAppliedDiscount(null);
 
     useEffect(() => {
         setIsMounted(true);
@@ -88,10 +99,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const clearCart = () => setItems([]);
 
     const cartTotal = items.reduce((total, item) => total + item.price * item.quantity, 0);
+    const finalTotal = appliedDiscount
+        ? appliedDiscount.type === 'percentage'
+            ? cartTotal * (1 - appliedDiscount.value / 100)
+            : Math.max(0, cartTotal - appliedDiscount.value)
+        : cartTotal;
     const cartCount = items.reduce((total, item) => total + item.quantity, 0);
 
     return (
-        <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, isCartOpen, setIsCartOpen, cartTotal, cartCount }}>
+        <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, isCartOpen, setIsCartOpen, cartTotal, cartCount, appliedDiscount, applyDiscount, removeDiscount, finalTotal }}>
             {children}
         </CartContext.Provider>
     );
