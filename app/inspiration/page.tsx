@@ -2,6 +2,7 @@ import Link from 'next/link';
 import dbConnect from '@/lib/db';
 import BlogPost from '@/models/BlogPost';
 import { Metadata } from 'next';
+import { normalizeDriveLink } from '@/lib/imageUtils';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,7 +52,7 @@ export default async function InspirationPage() {
                             <div key={post._id} className="flex flex-col rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:scale-[1.02]">
                                 <div className="flex-shrink-0">
                                     <Link href={`/inspiration/${post.slug || post._id}`}>
-                                        <img className="h-48 w-full object-cover" src={post.coverImage?.replace(/\\/g, '/').replace(/^(?!\/|http)/, '/')} alt={post.title} />
+                                        <img className="h-48 w-full object-cover" src={normalizeDriveLink(post.coverImage)} alt={post.title} />
                                     </Link>
                                 </div>
                                 <div className="flex-1 bg-white p-6 flex flex-col justify-between">

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { normalizeDriveLink } from '@/lib/imageUtils';
 
 interface BlogPostFormProps {
     initialData?: {
@@ -102,7 +103,7 @@ export default function BlogPostForm({ initialData, isEditing = false, onSubmit 
                     />
                     {formData.coverImage && (
                         <div className="mt-2">
-                            <img src={formData.coverImage} alt="Preview" className="h-40 w-auto object-cover rounded" />
+                            <img src={normalizeDriveLink(formData.coverImage)} alt="Preview" className="h-40 w-auto object-cover rounded" />
                         </div>
                     )}
                 </div>

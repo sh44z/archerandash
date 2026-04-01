@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import dbConnect from '@/lib/db';
 import BlogPost from '@/models/BlogPost';
 import { Metadata } from 'next';
+import { normalizeDriveLink } from '@/lib/imageUtils';
 
 // Force dynamic rendering to ensure fresh content
 export const dynamic = 'force-dynamic';
@@ -47,7 +48,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
         openGraph: {
             title: post.title,
             description: post.excerpt,
-            images: [post.coverImage],
+            images: [normalizeDriveLink(post.coverImage || '')],
             type: 'article',
             publishedTime: post.publishedAt,
             authors: [post.author],
@@ -63,12 +64,19 @@ export default async function BlogPostPage(props: PageProps) {
         notFound();
     }
 
+    // Process HTML content to normalize any Google Drive image links
+    const contentWithNormalizedImages = post.content 
+        ? post.content.replace(/<img(.*?)src=["'](.*?)["']/gi, (match: string, prefix: string, src: string) => {
+            return `<img${prefix}src="${normalizeDriveLink(src)}"`;
+        })
+        : '';
+
     return (
         <article className="bg-white min-h-screen">
             {/* Hero Image */}
             <div className="w-full h-64 md:h-96 relative">
                 <img
-                    src={post.coverImage?.replace(/\\/g, '/').replace(/^(?!\/|http)/, '/')}
+                    src={normalizeDriveLink(post.coverImage)}
                     alt={post.title}
                     className="w-full h-full object-cover"
                 />
@@ -105,7 +113,7 @@ export default async function BlogPostPage(props: PageProps) {
                 </nav>
 
                 <div className="prose prose-lg prose-indigo mx-auto text-gray-700">
-                    <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                    <div dangerouslySetInnerHTML={{ __html: contentWithNormalizedImages }} />
                 </div>
 
                 <div className="mt-16 border-t border-gray-200 pt-8">
