@@ -164,7 +164,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
             title: product.metaTitle || product.title,
             description: (product.metaDescription || product.description)?.substring(0, 200),
             images: normalizedImage ? [{ url: normalizedImage, width: 1200, height: 900 }] : [],
-            type: 'product',
+            type: 'article',
             url: productUrl,
         },
         twitter: {

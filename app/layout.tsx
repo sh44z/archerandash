@@ -17,7 +17,6 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.archerandash.com'),
-  charset: 'utf-8',
   viewport: {
     width: 'device-width',
     initialScale: 1,

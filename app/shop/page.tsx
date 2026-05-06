@@ -8,21 +8,6 @@ import { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Shop | Archer and Ash',
-  description: 'Browse our collection of modern canvas art, posters, and wall decor for your home.',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    minimumScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-  },
-  alternates: {
-    canonical: 'https://www.archerandash.com/shop'
-  }
-};
-
 async function getProducts(categoryId?: string) {
   await dbConnect();
 
@@ -178,8 +163,15 @@ export async function generateMetadata({
     return {
       title: "Shop All Products | Archer and Ash",
       description: "Browse our complete collection of modern wall art and canvas prints.",
+      viewport: {
+        width: 'device-width',
+        initialScale: 1,
+        minimumScale: 1,
+        maximumScale: 5,
+        userScalable: true,
+      },
       alternates: {
-        canonical: '/shop'
+        canonical: 'https://www.archerandash.com/shop'
       }
     };
   }
@@ -190,22 +182,36 @@ export async function generateMetadata({
   if (!category) {
     return {
       title: "Shop | Archer and Ash",
+      viewport: {
+        width: 'device-width',
+        initialScale: 1,
+        minimumScale: 1,
+        maximumScale: 5,
+        userScalable: true,
+      },
       alternates: {
-        canonical: '/shop'
+        canonical: 'https://www.archerandash.com/shop'
       }
     };
   }
 
   const categoryName = category.name;
-  const canonicalPath = params.subcategory
-    ? `/shop?subcategory=${categoryId}`
-    : `/shop?category=${categoryId}`;
+  const canonicalUrl = params.subcategory
+    ? `https://www.archerandash.com/shop?subcategory=${categoryId}`
+    : `https://www.archerandash.com/shop?category=${categoryId}`;
 
   return {
     title: `${categoryName} | Archer and Ash`,
     description: `Shop our exclusive collection of ${categoryName} at Archer and Ash.`,
+    viewport: {
+      width: 'device-width',
+      initialScale: 1,
+      minimumScale: 1,
+      maximumScale: 5,
+      userScalable: true,
+    },
     alternates: {
-      canonical: canonicalPath
+      canonical: canonicalUrl
     },
     openGraph: {
       title: `${categoryName} | Archer and Ash`,

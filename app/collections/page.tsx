@@ -1,24 +1,8 @@
 import Link from 'next/link';
 import dbConnect from '@/lib/db';
 import Category from '@/models/Category';
-import { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
-
-export const metadata: Metadata = {
-  title: 'Collections | Archer and Ash',
-  description: 'Explore our curated collections of modern wall art and canvas prints.',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    minimumScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-  },
-  alternates: {
-    canonical: 'https://www.archerandash.com/collections'
-  }
-};
 
 async function getCategories() {
     await dbConnect();
@@ -73,11 +57,3 @@ export default async function CollectionsPage() {
         </div>
     );
 }
-
-export const metadata: Metadata = {
-    title: 'Collections | Archer and Ash',
-    description: 'Explore our curated collections of wall art and canvas prints.',
-    alternates: {
-        canonical: '/collections'
-    }
-};
