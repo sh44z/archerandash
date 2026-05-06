@@ -53,7 +53,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                         {/* Image Gallery */}
                         <div className="flex flex-col-reverse">
                             {/* Mobile Image Carousel */}
-                            <div className="block sm:hidden w-full aspect-square relative mb-6 overflow-hidden rounded-lg">
+                            <div className="block sm:hidden w-full aspect-square relative mb-6 overflow-hidden rounded-lg bg-gray-50">
                                 <div className="flex overflow-x-auto snap-x snap-mandatory h-full w-full hide-scrollbar">
                                     {product.images.map((image, idx) => (
                                         <div key={idx} className="w-full flex-shrink-0 snap-center h-full flex items-center justify-center bg-gray-50 p-2">
@@ -61,6 +61,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                                                 src={normalizeDriveLink(image)}
                                                 alt={`${product.title} - Image ${idx + 1}`}
                                                 className="w-auto h-auto max-w-full max-h-full object-contain"
+                                                loading={idx === 0 ? 'eager' : 'lazy'}
                                                 style={{
                                                     maxHeight: '100%',
                                                     maxWidth: '100%',
@@ -75,7 +76,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                                 {product.images.length > 1 && (
                                     <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2 pointer-events-none z-10">
                                         {product.images.map((_, idx) => (
-                                            <div key={idx} className="w-2 h-2 rounded-full bg-gray-400/70" />
+                                            <div 
+                                                key={idx} 
+                                                className={`w-2 h-2 rounded-full transition-colors ${idx === currentImageIndex ? 'bg-gray-700' : 'bg-gray-400/70'}`} 
+                                                aria-label={`Image ${idx + 1} of ${product.images.length}`}
+                                            />
                                         ))}
                                     </div>
                                 )}
@@ -83,17 +88,19 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
                             {/* Desktop Image Selector */}
                             <div className="hidden mt-6 w-full max-w-2xl mx-auto sm:block lg:max-w-none">
-                                <div className="grid grid-cols-4 gap-6" aria-orientation="horizontal">
+                                <div className="grid grid-cols-4 gap-6" role="tablist" aria-label="Product Images">
                                     {product.images.map((image, idx) => (
                                         <button
                                             key={idx}
                                             onClick={() => setCurrentImageIndex(idx)}
-                                            className={`relative h-24 bg-white rounded-md flex items-center justify-center text-sm font-medium uppercase text-gray-900 cursor-pointer hover:bg-gray-50 focus:outline-none focus:ring focus:ring-offset-4 focus:ring-opacity-50 ${idx === currentImageIndex ? 'ring-indigo-500' : 'ring-transparent'
+                                            role="tab"
+                                            aria-selected={idx === currentImageIndex}
+                                            className={`relative h-24 bg-white rounded-md flex items-center justify-center text-sm font-medium uppercase text-gray-900 cursor-pointer hover:bg-gray-50 focus:outline-none focus:ring focus:ring-offset-4 focus:ring-opacity-50 transition-all ${idx === currentImageIndex ? 'ring-2 ring-indigo-500' : 'ring-1 ring-gray-200'
                                                 }`}
                                         >
                                             <span className="sr-only">View Image {idx + 1}</span>
                                             <span className="absolute inset-0 rounded-md overflow-hidden">
-                                                <img src={normalizeDriveLink(image)} alt="" className="w-full h-full object-center object-cover" />
+                                                <img src={normalizeDriveLink(image)} alt="" loading="lazy" className="w-full h-full object-center object-cover" />
                                             </span>
                                         </button>
                                     ))}
@@ -112,6 +119,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                                     <img
                                         src={normalizeDriveLink(product.images[currentImageIndex])}
                                         alt={product.title}
+                                        loading="eager"
                                         className="w-auto h-auto max-w-full max-h-full object-contain"
                                         style={{
                                             maxHeight: '100%',
@@ -137,7 +145,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                                 <h3 className="sr-only">Description</h3>
                                 <div
                                     className="text-base text-gray-700 space-y-6"
-                                    dangerouslySetInnerHTML={{ __html: product.description }} // Assuming rich text or just text, safer to use just {product.description} if plain text, but often description might have line breaks
+                                    dangerouslySetInnerHTML={{ __html: product.description }}
                                 />
                             </div>
 
@@ -145,32 +153,33 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                                 {/* Variants */}
                                 {product.variants && product.variants.length > 0 && (
                                     <div className="mt-10">
-                                        <div className="flex items-center justify-between">
+                                        <div className="flex items-center justify-between mb-4">
                                             <h3 className="text-sm text-gray-900 font-medium">Size</h3>
                                         </div>
 
-                                        <div className="grid grid-cols-4 gap-4 sm:grid-cols-6 lg:grid-cols-4 mt-4">
+                                        <div className="grid grid-cols-4 gap-4 sm:grid-cols-6 lg:grid-cols-4">
                                             {product.variants.map((variant) => (
                                                 <button
                                                     key={variant.size}
                                                     onClick={() => setSelectedVariant(variant)}
-                                                    className={`group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none sm:flex-1 ${selectedVariant?.size === variant.size
+                                                    aria-pressed={selectedVariant?.size === variant.size}
+                                                    className={`group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:flex-1 transition-all ${selectedVariant?.size === variant.size
                                                         ? 'bg-indigo-600 border-transparent text-white hover:bg-indigo-700'
-                                                        : 'bg-white border-gray-200 text-gray-900'
+                                                        : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'
                                                         }`}
                                                 >
-                                                    <span id={`size-choice-${variant.size}-label`}>{variant.size}</span>
+                                                    <span>{variant.size}</span>
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
                                 )}
 
-                                <div className="mt-10 flex sm:flex-col1">
+                                <div className="mt-10 flex sm:flex-col w-full">
                                     <button
                                         type="button"
                                         onClick={handleAddToCart}
-                                        className="max-w-xs flex-1 bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500 sm:w-full transition-transform hover:scale-105"
+                                        className="w-full flex-1 bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all hover:scale-105 active:scale-95"
                                     >
                                         Add to Cart
                                     </button>

@@ -4,8 +4,24 @@ import Category from '@/models/Category';
 import dbConnect from '@/lib/db';
 import Link from 'next/link';
 import mongoose from 'mongoose';
+import { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Shop | Archer and Ash',
+  description: 'Browse our collection of modern canvas art, posters, and wall decor for your home.',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    minimumScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
+  alternates: {
+    canonical: 'https://www.archerandash.com/shop'
+  }
+};
 
 async function getProducts(categoryId?: string) {
   await dbConnect();
@@ -197,3 +213,7 @@ export async function generateMetadata({
     }
   };
 }
+
+
+
+

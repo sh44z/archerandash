@@ -38,7 +38,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     const [imgSrc, setImgSrc] = useState(imageUrl);
 
     return (
-        <Link href={`/product/${product.slug || product._id}`} className="group block">
+        <Link href={`/product/${product.slug || product._id}`} className="group block h-full">
             <div
                 className="relative aspect-[3/4] overflow-hidden bg-gray-100 rounded-sm flex items-center justify-center p-2 md:p-0"
                 onMouseEnter={() => setIsHovered(true)}
@@ -48,6 +48,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                     src={imgSrc}
                     alt={product.title}
                     referrerPolicy="no-referrer"
+                    loading="lazy"
                     onError={() => setImgSrc('https://via.placeholder.com/400x600?text=No+Image')}
                     className={`w-auto h-auto max-w-full max-h-full object-contain md:object-cover md:w-full md:h-full object-center transition-transform duration-700 ease-in-out ${isHovered ? 'scale-105' : 'scale-100'}`}
                     style={{
@@ -63,13 +64,13 @@ export default function ProductCard({ product }: ProductCardProps) {
                     </span>
                 </div>
             </div>
-            <div className="mt-4 flex flex-col sm:flex-row justify-between">
-                <div className="mb-2 sm:mb-0">
-                    <h3 className="text-sm text-gray-700 uppercase tracking-wide font-medium">
+            <div className="mt-4 flex flex-col sm:flex-row justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                    <h3 className="text-sm text-gray-700 uppercase tracking-wide font-medium line-clamp-2">
                         {product.title}
                     </h3>
                 </div>
-                <p className="text-sm font-medium text-gray-900">{priceDisplay}</p>
+                <p className="text-sm font-medium text-gray-900 whitespace-nowrap">{priceDisplay}</p>
             </div>
         </Link>
     );

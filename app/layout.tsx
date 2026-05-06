@@ -17,8 +17,21 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.archerandash.com'),
+  charset: 'utf-8',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    minimumScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
+  formatDetection: {
+    telephone: false,
+    email: false,
+    address: false,
+  },
   alternates: {
-    canonical: './',
+    canonical: 'https://www.archerandash.com/',
   },
   title: {
     default: "Archer and Ash | Modern Canvas Art & Wall Decor",
@@ -42,7 +55,7 @@ export const metadata: Metadata = {
     description: "Discover unique wall arts, posters, and canvas prints for modern living.",
     images: [
       {
-        url: "/og-image.jpg", // TODO: Add an OG image
+        url: "https://www.archerandash.com/images/logo.jpg",
         width: 1200,
         height: 630,
         alt: "Archer and Ash"
@@ -53,7 +66,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Archer and Ash | Modern Canvas Art & Wall Decor",
     description: "Discover unique canvas prints and wall art for modern living.",
-    images: ["/og-image.jpg"], // TODO: Add an OG image
+    creator: "@archerandash",
+    images: ["https://www.archerandash.com/images/logo.jpg"],
   },
   robots: {
     index: true,

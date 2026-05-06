@@ -143,25 +143,35 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
 
     const mainImage = product.images?.[0] || "";
+    const normalizedImage = mainImage ? (mainImage.startsWith('http') ? mainImage : `https://www.archerandash.com${mainImage}`) : "https://www.archerandash.com/images/logo.jpg";
+    const productUrl = `https://www.archerandash.com/product/${product.slug || product._id}`;
 
     return {
         title: product.metaTitle || product.title,
         description: (product.metaDescription || product.description)?.substring(0, 160) || `Buy ${product.title} at Archer and Ash`,
         keywords: product.keywords ? product.keywords.split(',').map((k: string) => k.trim()) : undefined,
+        viewport: {
+            width: 'device-width',
+            initialScale: 1,
+            minimumScale: 1,
+            maximumScale: 5,
+            userScalable: true,
+        },
         alternates: {
-            canonical: `/product/${product.slug || product._id}`
+            canonical: productUrl
         },
         openGraph: {
             title: product.metaTitle || product.title,
             description: (product.metaDescription || product.description)?.substring(0, 200),
-            images: mainImage ? [{ url: mainImage }] : [],
-            type: 'article'
+            images: normalizedImage ? [{ url: normalizedImage, width: 1200, height: 900 }] : [],
+            type: 'product',
+            url: productUrl,
         },
         twitter: {
             card: 'summary_large_image',
             title: product.metaTitle || product.title,
             description: (product.metaDescription || product.description)?.substring(0, 200),
-            images: mainImage ? [mainImage] : [],
+            images: normalizedImage ? [normalizedImage] : [],
         }
     };
 }
