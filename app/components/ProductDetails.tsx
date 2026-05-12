@@ -160,21 +160,19 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                                             <h3 className="text-sm text-gray-900 font-medium">Product options</h3>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                                        <label htmlFor="productVariant" className="sr-only">Choose a variant</label>
+                                        <select
+                                            id="productVariant"
+                                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                            value={selectedVariantIndex}
+                                            onChange={(e) => setSelectedVariantIndex(Number(e.target.value))}
+                                        >
                                             {product.variants.map((variant, index) => (
-                                                <button
-                                                    key={variant.size}
-                                                    onClick={() => setSelectedVariantIndex(index)}
-                                                    aria-pressed={selectedVariant?.size === variant.size}
-                                                    className={`group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:flex-1 transition-all ${selectedVariant?.size === variant.size
-                                                        ? 'bg-indigo-600 border-transparent text-white hover:bg-indigo-700'
-                                                        : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'
-                                                        }`}
-                                                >
-                                                    <span>{variant.size}</span>
-                                                </button>
+                                                <option key={variant.size} value={index}>
+                                                    {variant.size} – £{variant.price.toFixed(2)}
+                                                </option>
                                             ))}
-                                        </div>
+                                        </select>
                                     </div>
                                 )}
 
