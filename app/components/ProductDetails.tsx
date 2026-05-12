@@ -23,17 +23,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     const { addToCart } = useCart();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-    const framedVariantEntries = product.variants
-        .map((variant, index) => ({ variant, index }))
-        .filter(({ variant }) => /framed/i.test(variant.size));
-    const unframedVariantEntries = product.variants
-        .map((variant, index) => ({ variant, index }))
-        .filter(({ variant }) => /unframed/i.test(variant.size));
-    const hasFrameVariants = framedVariantEntries.length > 0;
-
-    const [selectedVariantIndex, setSelectedVariantIndex] = useState<number>(
-        unframedVariantEntries.length > 0 ? unframedVariantEntries[0].index : 0
-    );
+    const [selectedVariantIndex, setSelectedVariantIndex] = useState<number>(0);
 
     const selectedVariant = product.variants[selectedVariantIndex] || product.variants[0];
     const currentPrice = selectedVariant ? selectedVariant.price : product.price;
@@ -152,11 +142,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                             <div className="mt-3">
                                 <h2 className="sr-only">Product information</h2>
                                 <p className="text-3xl text-gray-900">£{displayPrice}</p>
-                                {hasFrameVariants && (
-                                    <p className="mt-2 text-sm text-gray-500">
-                                        The price shown is the base unframed price. Select a framed option below if you want framing.
-                                    </p>
-                                )}
                             </div>
 
                             <div className="mt-6">
@@ -169,56 +154,27 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
                             <div className="mt-6">
                                 {/* Variants */}
-                                {product.variants && product.variants.length > 0 && (
+                                {product.variants && product.variants.length > 1 && (
                                     <div className="mt-10">
                                         <div className="flex items-center justify-between mb-4">
                                             <h3 className="text-sm text-gray-900 font-medium">Product options</h3>
                                         </div>
 
-                                        {hasFrameVariants ? (
-                                            <div>
-                                                <label htmlFor="productVariant" className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Choose a variant
-                                                </label>
-                                                <select
-                                                    id="productVariant"
-                                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                                    value={selectedVariantIndex}
-                                                    onChange={(e) => setSelectedVariantIndex(Number(e.target.value))}
+                                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                                            {product.variants.map((variant, index) => (
+                                                <button
+                                                    key={variant.size}
+                                                    onClick={() => setSelectedVariantIndex(index)}
+                                                    aria-pressed={selectedVariant?.size === variant.size}
+                                                    className={`group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:flex-1 transition-all ${selectedVariant?.size === variant.size
+                                                        ? 'bg-indigo-600 border-transparent text-white hover:bg-indigo-700'
+                                                        : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'
+                                                        }`}
                                                 >
-                                                    {unframedVariantEntries.map(({ variant, index }) => (
-                                                        <option key={`unframed-${index}`} value={index}>
-                                                            {variant.size} – £{variant.price.toFixed(2)} (Unframed)
-                                                        </option>
-                                                    ))}
-                                                    {framedVariantEntries.length > 0 && (
-                                                        <optgroup label="Framed options">
-                                                            {framedVariantEntries.map(({ variant, index }) => (
-                                                                <option key={`framed-${index}`} value={index}>
-                                                                    {variant.size} – £{variant.price.toFixed(2)} (Framed)
-                                                                </option>
-                                                            ))}
-                                                        </optgroup>
-                                                    )}
-                                                </select>
-                                            </div>
-                                        ) : (
-                                            <div className="grid grid-cols-4 gap-4 sm:grid-cols-6 lg:grid-cols-4">
-                                                {product.variants.map((variant, index) => (
-                                                    <button
-                                                        key={variant.size}
-                                                        onClick={() => setSelectedVariantIndex(index)}
-                                                        aria-pressed={selectedVariant?.size === variant.size}
-                                                        className={`group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:flex-1 transition-all ${selectedVariant?.size === variant.size
-                                                            ? 'bg-indigo-600 border-transparent text-white hover:bg-indigo-700'
-                                                            : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'
-                                                            }`}
-                                                    >
-                                                        <span>{variant.size}</span>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
+                                                    <span>{variant.size}</span>
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
 
