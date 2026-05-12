@@ -3,12 +3,27 @@ import dbConnect from '@/lib/db';
 import Product from '@/models/Product';
 import { normalizeDriveLink } from '@/lib/imageUtils';
 
+interface FeedVariant {
+    size: string;
+    price: number;
+}
+
+interface FeedProduct {
+    _id: string;
+    title: string;
+    description: string;
+    slug?: string;
+    images?: string[];
+    variants?: FeedVariant[];
+    price?: number;
+}
+
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
     try {
         await dbConnect();
-        const products = await Product.find({}).sort({ createdAt: -1 }).lean();
+        const products = await Product.find({}).sort({ createdAt: -1 }).lean<FeedProduct[]>();
 
         const baseUrl = 'https://www.archerandash.com';
         // Trim whitespace to ensure it starts with <?xml
@@ -23,17 +38,24 @@ export async function GET() {
 </channel>
 </rss>`;
 
-        const items = products.map((product: any) => {
-            // Calculate price (use lowest variant price or legacy price)
-            let price = 0;
-            if (product.variants && product.variants.length > 0) {
-                price = Math.min(...product.variants.map((v: any) => v.price));
-            } else if (product.price) {
-                price = product.price;
-            }
+        const items = products.map((product: FeedProduct) => {
+            const unframedPrices = product.variants?.filter((variant) => /unframed/i.test(variant.size)).map((variant) => variant.price) || [];
+            const allVariantPrices = product.variants?.map((variant) => variant.price) || [];
+            const price = unframedPrices.length > 0
+                ? Math.min(...unframedPrices)
+                : allVariantPrices.length > 0
+                    ? Math.min(...allVariantPrices)
+                    : product.price || 0;
 
             // Skip if no price (shouldn't happen for valid products)
             if (!price) return '';
+
+            const hasFramedVariants = product.variants?.some((variant) => /framed/i.test(variant.size));
+            const title = hasFramedVariants && !/unframed/i.test(product.title)
+                ? `${product.title} - Unframed`
+                : product.title;
+
+            const itemLink = `${baseUrl}/product/${product.slug || product._id}`;
 
             // Get main image
             const imageLink = product.images && product.images.length > 0
@@ -52,9 +74,9 @@ export async function GET() {
             return `
 <item>
 <g:id>${product._id}</g:id>
-<g:title><![CDATA[${product.title}]]></g:title>
+<g:title><![CDATA[${title}]]></g:title>
 <g:description><![CDATA[${product.description}]]></g:description>
-<g:link>${baseUrl}/product/${product._id}</g:link>
+<g:link>${itemLink}</g:link>
 <g:image_link>${imageLink}</g:image_link>
 ${additionalImages}
 <g:condition>new</g:condition>

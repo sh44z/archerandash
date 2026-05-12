@@ -16,10 +16,13 @@ export default function ProductCard({ product }: ProductCardProps) {
         ? normalizeDriveLink(product.images[0])
         : 'https://via.placeholder.com/300?text=No+Image';
 
-    // Calculate Price Range
+    // Calculate Price Range using unframed prices where available
+    const unframedVariants = product.variants?.filter(v => /unframed/i.test(v.size)) || [];
+    const priceSource = unframedVariants.length > 0 ? unframedVariants : (product.variants && product.variants.length > 0 ? product.variants : []);
+
     let priceDisplay = '';
-    if (product.variants && product.variants.length > 0) {
-        const prices = product.variants.map(v => v.price);
+    if (priceSource.length > 0) {
+        const prices = priceSource.map(v => v.price);
         const minPrice = Math.min(...prices);
         const maxPrice = Math.max(...prices);
 

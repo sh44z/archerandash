@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import dbConnect from '@/lib/db';
 import Product from '@/models/Product';
@@ -7,6 +6,29 @@ import mongoose from 'mongoose';
 import { Metadata } from 'next';
 import Breadcrumbs from '@/app/components/Breadcrumbs';
 
+interface ProductVariant {
+    size: string;
+    price: number;
+}
+
+interface ProductData {
+    _id: string;
+    title: string;
+    description: string;
+    images: string[];
+    variants: ProductVariant[];
+    slug?: string;
+    category?: {
+        _id: string;
+        name: string;
+        slug: string;
+    };
+    createdAt?: string;
+    metaTitle?: string;
+    metaDescription?: string;
+    keywords?: string;
+}
+
 interface PageProps {
     params: Promise<{
         slug: string;
@@ -14,7 +36,7 @@ interface PageProps {
 }
 
 // Helper to safely get product
-async function getProduct(term: string) {
+async function getProduct(term: string): Promise<ProductData | null> {
     await dbConnect();
 
     try {
@@ -56,11 +78,11 @@ async function getProduct(term: string) {
             images: populatedProduct.images || [],
             variants: populatedProduct.variants || [],
             category: populatedProduct.category ? {
-                // @ts-ignore
+                // @ts-expect-error: populatedProduct.category is a legacy object from mongoose serialization
                 name: populatedProduct.category.name,
-                // @ts-ignore
+                // @ts-expect-error: populatedProduct.category is a legacy object from mongoose serialization
                 slug: populatedProduct.category.slug,
-                // @ts-ignore
+                // @ts-expect-error: populatedProduct.category is a legacy object from mongoose serialization
                 _id: populatedProduct.category._id.toString()
             } : undefined,
             slug: populatedProduct.slug
@@ -89,11 +111,18 @@ export default async function ProductPage({ params }: PageProps) {
     ];
 
     if (product.category) {
-        // @ts-ignore
+        // @ts-expect-error: product.category comes from a populated mongo document and is not strongly typed here
         breadcrumbItems.push({ label: product.category.name, href: `/collections/${product.category.slug}` });
     }
 
     breadcrumbItems.push({ label: product.title, href: `/product/${product.slug || product._id}` });
+
+    const unframedVariants = product.variants?.filter((variant: ProductVariant) => /unframed/i.test(variant.size)) || [];
+    const offerVariants: ProductVariant[] = unframedVariants.length > 0 ? unframedVariants : product.variants || [];
+    const lowPrice = offerVariants.length > 0 ? Math.min(...offerVariants.map((v: ProductVariant) => v.price)) : 0;
+    const highPrice = offerVariants.length > 0 ? Math.max(...offerVariants.map((v: ProductVariant) => v.price)) : lowPrice;
+    const offerCount = offerVariants.length || 1;
+    const productUrl = `https://www.archerandash.com/product/${product.slug || product._id}`;
 
     return (
         <div className="bg-white min-h-screen">
@@ -106,6 +135,7 @@ export default async function ProductPage({ params }: PageProps) {
                         name: product.title,
                         description: product.description,
                         image: product.images,
+                        url: productUrl,
                         sku: product._id,
                         brand: {
                             "@type": "Brand",
@@ -114,9 +144,9 @@ export default async function ProductPage({ params }: PageProps) {
                         offers: {
                             "@type": "AggregateOffer",
                             priceCurrency: "GBP",
-                            lowPrice: product.variants?.length > 0 ? Math.min(...product.variants.map((v: any) => v.price)) : 0,
-                            highPrice: product.variants?.length > 0 ? Math.max(...product.variants.map((v: any) => v.price)) : 0,
-                            offerCount: product.variants?.length || 0,
+                            lowPrice,
+                            highPrice,
+                            offerCount,
                             availability: "https://schema.org/InStock"
                         }
                     })
@@ -125,7 +155,7 @@ export default async function ProductPage({ params }: PageProps) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <Breadcrumbs items={breadcrumbItems} />
             </div>
-            {/* @ts-ignore */}
+            {/* @ts-expect-error: product is not strongly typed for the React component prop here */}
             <ProductDetails product={product} />
         </div>
     );
