@@ -14,12 +14,13 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }
 
-        const token = await signToken({ userId: user._id, email: user.email });
+        const token = await signToken({ userId: user._id.toString(), email: user.email });
 
         const response = NextResponse.json({ success: true });
         response.cookies.set('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
             path: '/',
             maxAge: 60 * 60 * 24, // 1 day
         });
