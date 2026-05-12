@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { client } from '@/lib/paypal';
-// @ts-ignore
-import * as paypal from '@paypal/checkout-server-sdk';
+import { CheckoutPaymentIntent, OrdersController } from '@paypal/paypal-server-sdk';
 import dbConnect from '@/lib/db';
 import DiscountCode from '@/models/DiscountCode';
 
@@ -38,41 +37,42 @@ export async function POST(req: Request) {
         const secureTotal = cartSubtotal - discountAmount;
 
         // Create order request
-        const request = new paypal.orders.OrdersCreateRequest();
-        request.prefer("return=representation");
-        request.requestBody({
-            intent: "CAPTURE",
-            purchase_units: [
-                {
-                    amount: {
-                        currency_code: "GBP",
-                        value: secureTotal.toFixed(2),
-                        breakdown: {
-                            item_total: {
-                                currency_code: "GBP",
-                                value: cartSubtotal.toFixed(2)
-                            },
-                            discount: {
-                                currency_code: "GBP",
-                                value: discountAmount.toFixed(2)
+        const ordersController = new OrdersController(client);
+        const order = await ordersController.createOrder({
+            body: {
+                intent: CheckoutPaymentIntent.Capture,
+                purchaseUnits: [
+                    {
+                        amount: {
+                            currencyCode: "GBP",
+                            value: secureTotal.toFixed(2),
+                            breakdown: {
+                                itemTotal: {
+                                    currencyCode: "GBP",
+                                    value: cartSubtotal.toFixed(2)
+                                },
+                                discount: {
+                                    currencyCode: "GBP",
+                                    value: discountAmount.toFixed(2)
+                                }
                             }
-                        }
-                    },
-                    items: cartItems.map((item: any) => ({
-                        name: item.title.substring(0, 127), // PayPal limit
-                        quantity: item.quantity.toString(),
-                        unit_amount: {
-                            currency_code: "GBP",
-                            value: item.price.toFixed(2)
-                        }
-                    }))
-                }
-            ]
+                        },
+                        items: cartItems.map((item: any) => ({
+                            name: item.title.substring(0, 127), // PayPal limit
+                            quantity: item.quantity.toString(),
+                            unitAmount: {
+                                currencyCode: "GBP",
+                                value: item.price.toFixed(2)
+                            }
+                        }))
+                    }
+                ]
+            },
+            prefer: "return=representation"
         });
 
         console.log('Sending request to PayPal API...');
-        const order = await client.execute(request);
-        console.log('PayPal order created:', order.result.id);
+        console.log('PayPal order created:', order.result?.id);
 
         return NextResponse.json({
             id: order.result.id
