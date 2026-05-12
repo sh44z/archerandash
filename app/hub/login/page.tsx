@@ -21,8 +21,7 @@ export default function LoginPage() {
         });
 
         if (res.ok) {
-            router.push('/hub');
-            router.refresh();
+            window.location.href = '/hub';
         } else {
             const data = await res.json();
             setError(data.error || 'Login failed');
