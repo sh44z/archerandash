@@ -69,21 +69,24 @@ async function getProduct(term: string): Promise<ProductData | null> {
         await productDoc.populate('category', 'name slug');
 
         // Use JSON serialization to ensure clean object for Next.js props
-        const populatedProduct = JSON.parse(JSON.stringify(productDoc));
+        const populatedProduct = JSON.parse(JSON.stringify(productDoc)) as ProductData & {
+            category?: {
+                _id?: string;
+                name: string;
+                slug: string;
+            };
+        };
 
         return {
             ...populatedProduct,
             _id: populatedProduct._id.toString(),
-            createdAt: populatedProduct.createdAt ? new Date(populatedProduct.createdAt).toISOString() : null,
+            createdAt: populatedProduct.createdAt ? new Date(populatedProduct.createdAt).toISOString() : undefined,
             images: populatedProduct.images || [],
             variants: populatedProduct.variants || [],
             category: populatedProduct.category ? {
-                // @ts-expect-error: populatedProduct.category is a legacy object from mongoose serialization
                 name: populatedProduct.category.name,
-                // @ts-expect-error: populatedProduct.category is a legacy object from mongoose serialization
                 slug: populatedProduct.category.slug,
-                // @ts-expect-error: populatedProduct.category is a legacy object from mongoose serialization
-                _id: populatedProduct.category._id.toString()
+                _id: populatedProduct.category._id?.toString() || ''
             } : undefined,
             slug: populatedProduct.slug
         };
@@ -111,7 +114,6 @@ export default async function ProductPage({ params }: PageProps) {
     ];
 
     if (product.category) {
-        // @ts-expect-error: product.category comes from a populated mongo document and is not strongly typed here
         breadcrumbItems.push({ label: product.category.name, href: `/collections/${product.category.slug}` });
     }
 
@@ -155,7 +157,6 @@ export default async function ProductPage({ params }: PageProps) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <Breadcrumbs items={breadcrumbItems} />
             </div>
-            {/* @ts-expect-error: product is not strongly typed for the React component prop here */}
             <ProductDetails product={product} />
         </div>
     );
