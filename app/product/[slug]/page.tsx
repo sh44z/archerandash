@@ -5,6 +5,7 @@ import ProductDetails from '@/app/components/ProductDetails';
 import mongoose from 'mongoose';
 import { Metadata } from 'next';
 import Breadcrumbs from '@/app/components/Breadcrumbs';
+import ProductCard from '@/app/components/ProductCard';
 
 interface ProductVariant {
     size: string;
@@ -126,6 +127,27 @@ export default async function ProductPage({ params }: PageProps) {
     const offerCount = offerVariants.length || 1;
     const productUrl = `https://www.archerandash.com/product/${product.slug || product._id}`;
 
+    // Fetch related products
+    let relatedProducts: any[] = [];
+    if (product.category?._id) {
+        try {
+            const relatedDocs = await Product.find({
+                category: product.category._id,
+                _id: { $ne: product._id }
+            })
+            .limit(4)
+            .lean();
+
+            relatedProducts = JSON.parse(JSON.stringify(relatedDocs)).map((doc: any) => ({
+                ...doc,
+                _id: doc._id.toString(),
+                category: doc.category?.toString()
+            }));
+        } catch (error) {
+            console.error("Error fetching related products:", error);
+        }
+    }
+
     return (
         <div className="bg-white min-h-screen">
             <script
@@ -158,6 +180,18 @@ export default async function ProductPage({ params }: PageProps) {
                 <Breadcrumbs items={breadcrumbItems} />
             </div>
             <ProductDetails product={product} />
+
+            {/* You May Also Like Section */}
+            {relatedProducts.length > 0 && (
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-gray-200 mt-12">
+                    <h2 className="text-2xl font-serif text-gray-900 mb-8 text-center uppercase tracking-wider">You May Also Like</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10">
+                        {relatedProducts.map((relatedProduct) => (
+                            <ProductCard key={relatedProduct._id} product={relatedProduct} />
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
