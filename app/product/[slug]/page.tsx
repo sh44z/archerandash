@@ -24,6 +24,11 @@ interface ProductData {
         name: string;
         slug: string;
     };
+    categories?: {
+        _id: string;
+        name: string;
+        slug: string;
+    }[];
     createdAt?: string;
     metaTitle?: string;
     metaDescription?: string;
@@ -68,6 +73,7 @@ async function getProduct(term: string): Promise<ProductData | null> {
 
         // Populate category
         await productDoc.populate('category', 'name slug');
+        await productDoc.populate('categories', 'name slug');
 
         // Use JSON serialization to ensure clean object for Next.js props
         const populatedProduct = JSON.parse(JSON.stringify(productDoc)) as ProductData & {
@@ -76,6 +82,11 @@ async function getProduct(term: string): Promise<ProductData | null> {
                 name: string;
                 slug: string;
             };
+            categories?: {
+                _id?: string;
+                name: string;
+                slug: string;
+            }[];
         };
 
         return {
@@ -89,6 +100,11 @@ async function getProduct(term: string): Promise<ProductData | null> {
                 slug: populatedProduct.category.slug,
                 _id: populatedProduct.category._id?.toString() || ''
             } : undefined,
+            categories: populatedProduct.categories?.map(c => ({
+                name: c.name,
+                slug: c.slug,
+                _id: c._id?.toString() || ''
+            })) || [],
             slug: populatedProduct.slug
         };
     } catch (error) {
@@ -129,10 +145,19 @@ export default async function ProductPage({ params }: PageProps) {
 
     // Fetch related products
     let relatedProducts: any[] = [];
-    if (product.category?._id) {
+    const categoryIds = product.categories?.map((c: any) => c._id) || [];
+    if (product.category?._id && !categoryIds.includes(product.category._id)) {
+        categoryIds.push(product.category._id);
+    }
+
+    if (categoryIds.length > 0) {
         try {
+            await dbConnect();
             const relatedDocs = await Product.find({
-                category: product.category._id,
+                $or: [
+                    { category: { $in: categoryIds } },
+                    { categories: { $in: categoryIds } }
+                ],
                 _id: { $ne: product._id }
             })
             .limit(4)
