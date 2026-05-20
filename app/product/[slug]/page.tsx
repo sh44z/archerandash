@@ -1,6 +1,7 @@
 import { notFound, permanentRedirect } from 'next/navigation';
 import dbConnect from '@/lib/db';
 import Product from '@/models/Product';
+import Category from '@/models/Category';
 import ProductDetails from '@/app/components/ProductDetails';
 import mongoose from 'mongoose';
 import { Metadata } from 'next';
@@ -44,6 +45,7 @@ interface PageProps {
 // Helper to safely get product
 async function getProduct(term: string): Promise<ProductData | null> {
     await dbConnect();
+    Category; // Ensure Category model is registered
 
     try {
         let productDoc = null;
