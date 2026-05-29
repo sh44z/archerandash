@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FaFacebook, FaInstagram, FaPinterest } from 'react-icons/fa';
+import { FaFacebook, FaInstagram } from 'react-icons/fa';
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
@@ -15,13 +15,10 @@ export default function Footer() {
                             Curated wall art and canvas prints for the modern home. diverse collections designed to inspire.
                         </p>
                         <div className="flex space-x-4 pt-4">
-                            <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                            <a href="https://www.instagram.com/archerandashuk/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
                                 <FaInstagram className="h-6 w-6" />
                             </a>
-                            <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                                <FaPinterest className="h-6 w-6" />
-                            </a>
-                            <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                            <a href="https://www.facebook.com/people/Archer-And-Ash/61587516868688/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
                                 <FaFacebook className="h-6 w-6" />
                             </a>
                         </div>
