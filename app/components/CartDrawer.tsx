@@ -133,7 +133,7 @@ export default function CartDrawer() {
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity" />
+                    <div className="fixed inset-0 bg-transparent backdrop-blur-md transition-opacity" />
                 </Transition.Child>
 
                 <div className="fixed inset-0 overflow-hidden">
