@@ -4,7 +4,7 @@ import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
-import { PayPalButtons } from '@paypal/react-paypal-js';
+// PayPal UI moved to dedicated checkout page; keep provider in `providers.tsx`
 
 export default function CartDrawer() {
     const { isCartOpen, setIsCartOpen, items, removeFromCart, updateQuantity, cartTotal, clearCart, appliedDiscount, applyDiscount, removeDiscount, finalTotal } = useCart();
@@ -133,7 +133,7 @@ export default function CartDrawer() {
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                    <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity" />
                 </Transition.Child>
 
                 <div className="fixed inset-0 overflow-hidden">
@@ -295,15 +295,16 @@ export default function CartDrawer() {
                                                 <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
 
                                                 <div className="mt-6">
-                                                    <PayPalButtons
-                                                        style={{ layout: "vertical" }}
-                                                        createOrder={createOrder}
-                                                        onApprove={onApprove}
-                                                        onError={onError}
-                                                        onCancel={onCancel}
-                                                        forceReRender={[finalTotal, items.length]}
-                                                        className="w-full"
-                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setIsCartOpen(false);
+                                                            router.push('/checkout');
+                                                        }}
+                                                        className="w-full bg-indigo-600 text-white px-6 py-3 rounded-md text-lg font-medium hover:bg-indigo-700"
+                                                    >
+                                                        Proceed to Checkout
+                                                    </button>
                                                 </div>
 
                                                 <div className="mt-6 flex justify-center text-center text-sm text-gray-500">
