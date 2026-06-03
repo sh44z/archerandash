@@ -64,6 +64,15 @@ export default async function ShopPage({
   const parentCategories = categories.filter(c => !c.parent);
   const childCategories = categories.filter(c => c.parent);
 
+  // Find active parent category ID
+  let activeParentId: string | null = null;
+  if (categoryId) {
+    const selectedCat = categories.find(c => c._id === categoryId);
+    if (selectedCat) {
+      activeParentId = selectedCat.parent ? selectedCat.parent : selectedCat._id;
+    }
+  }
+
   const getCategoryName = (id: string) => {
     const cat = categories.find(c => c._id === id);
     return cat?.name || 'All Products';
@@ -81,56 +90,58 @@ export default async function ShopPage({
           </h1>
 
           {/* Category Navigation */}
-          <div className="space-y-4">
-            {/* All Products Link */}
-            <div>
+          <div className="flex flex-col gap-4 border-b border-gray-100 pb-6 mb-6">
+            {/* Parent Categories Horizontal scroll list */}
+            <div className="flex items-center gap-2.5 overflow-x-auto pb-2 -mb-2 no-scrollbar">
               <Link
                 href="/shop"
-                className={`inline-block px-4 py-2 rounded-md text-sm font-medium transition-colors ${!categoryId
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                className={`inline-block px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 shadow-sm border whitespace-nowrap ${
+                  !categoryId
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-indigo-100 hover:bg-indigo-700'
+                    : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300'
+                }`}
               >
                 All Products
               </Link>
+
+              {parentCategories.map((parent) => (
+                <Link
+                  key={parent._id}
+                  href={`/shop?category=${parent._id}`}
+                  className={`inline-block px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 shadow-sm border whitespace-nowrap ${
+                    activeParentId === parent._id
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-indigo-100 hover:bg-indigo-700'
+                      : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300'
+                  }`}
+                >
+                  {parent.name}
+                </Link>
+              ))}
             </div>
 
-            {/* Parent Categories */}
-            {parentCategories.map((parent) => {
-              const children = childCategories.filter(c => c.parent === parent._id);
-
-              return (
-                <div key={parent._id} className="space-y-2">
-                  <Link
-                    href={`/shop?category=${parent._id}`}
-                    className={`inline-block px-4 py-2 rounded-md text-sm font-medium transition-colors ${categoryId === parent._id
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            {/* Subcategories Horizontal Scroll Container */}
+            {activeParentId && (
+              <div className="flex items-center gap-2 overflow-x-auto pt-2 border-t border-gray-100/60 pb-1 no-scrollbar animate-fadeIn">
+                <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest mr-2 whitespace-nowrap">
+                  Refine:
+                </span>
+                {childCategories
+                  .filter((c) => c.parent === activeParentId)
+                  .map((child) => (
+                    <Link
+                      key={child._id}
+                      href={`/shop?subcategory=${child._id}`}
+                      className={`inline-block px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 border whitespace-nowrap ${
+                        categoryId === child._id
+                          ? 'bg-indigo-50 text-indigo-700 border-indigo-200 font-semibold shadow-sm shadow-indigo-50/50'
+                          : 'bg-gray-50/50 text-gray-600 border-gray-100 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-200'
                       }`}
-                  >
-                    {parent.name}
-                  </Link>
-
-                  {/* Subcategories */}
-                  {children.length > 0 && (
-                    <div className="ml-6 flex flex-wrap gap-2">
-                      {children.map((child) => (
-                        <Link
-                          key={child._id}
-                          href={`/shop?subcategory=${child._id}`}
-                          className={`inline-block px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${categoryId === child._id
-                              ? 'bg-indigo-100 text-indigo-700 border border-indigo-300'
-                              : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
-                            }`}
-                        >
-                          {child.name}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                    >
+                      {child.name}
+                    </Link>
+                  ))}
+              </div>
+            )}
           </div>
         </div>
 
