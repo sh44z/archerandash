@@ -32,7 +32,7 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
                     {categories.map((category) => (
                         <Link key={category.id} href={`/shop?category=${category.id}`} className="group block">
                             <div className="h-28 sm:h-36 w-full rounded-2xl border border-gray-100 bg-white flex items-center justify-center p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:border-gray-200">
-                                <span className="text-3xl sm:text-4xl lg:text-5xl text-gray-800 group-hover:text-indigo-600 transition-colors duration-300 font-calligraphy capitalize text-center select-none leading-none">
+                                <span className="text-4xl sm:text-5xl lg:text-6xl text-gray-800 group-hover:text-indigo-600 transition-colors duration-300 font-calligraphy font-bold capitalize text-center select-none leading-none pt-2">
                                     {category.name.toLowerCase()}
                                 </span>
                             </div>

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Pinyon+Script&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Tangerine:wght@400;700&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -11,9 +11,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-calligraphy: 'Pinyon Script', cursive;
-  --font-alex: 'Alex Brush', cursive;
-  --font-posh: 'Cormorant Garamond', serif;
+  --font-calligraphy: 'Tangerine', cursive;
 }
 
 @media (prefers-color-scheme: dark) {
