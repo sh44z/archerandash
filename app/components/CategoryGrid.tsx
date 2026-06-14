@@ -28,12 +28,12 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
                     {categories.map((category) => (
-                        <Link key={category.id} href={`/shop?category=${category.id}`} className="group block">
+                        <Link key={category.id} href={`/shop?category=${category.id}`} className="group block w-[calc(50%-8px)] sm:w-[calc(50%-12px)] md:w-[calc(33.333%-16px)] lg:w-[calc(25%-18px)] max-w-xs">
                             <div className="h-28 sm:h-36 w-full rounded-2xl border border-gray-100 bg-white flex items-center justify-center p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:border-gray-200">
-                                <span className="text-4xl sm:text-5xl lg:text-6xl text-gray-800 group-hover:text-indigo-600 transition-colors duration-300 font-calligraphy font-bold capitalize text-center select-none leading-none pt-2">
-                                    {category.name.toLowerCase()}
+                                <span className="text-xl sm:text-2xl lg:text-3xl text-gray-900 group-hover:text-indigo-600 transition-colors duration-300 font-serif font-bold text-center select-none">
+                                    {category.name}
                                 </span>
                             </div>
                         </Link>

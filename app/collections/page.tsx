@@ -30,15 +30,15 @@ export default async function CollectionsPage() {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="flex flex-wrap justify-center gap-8">
                     {parentCategories.map((category) => (
                         <Link
                             key={category._id}
                             href={`/collections/${category.slug}`}
-                            className="group relative block h-32 sm:h-40 w-full overflow-hidden rounded-2xl border border-gray-100 bg-white flex items-center justify-center p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:border-gray-200"
+                            className="group relative block h-32 sm:h-40 w-full md:w-[calc(50%-16px)] lg:w-[calc(33.333%-22px)] max-w-sm overflow-hidden rounded-2xl border border-gray-100 bg-white flex items-center justify-center p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:border-gray-200"
                         >
-                            <span className="text-4xl sm:text-5xl lg:text-6xl text-gray-800 group-hover:text-indigo-600 transition-colors duration-300 font-calligraphy font-bold capitalize text-center select-none leading-none pt-2">
-                                {category.name.toLowerCase()}
+                            <span className="text-xl sm:text-2xl lg:text-3xl text-gray-900 group-hover:text-indigo-600 transition-colors duration-300 font-serif font-bold text-center select-none">
+                                {category.name}
                             </span>
                         </Link>
                     ))}
