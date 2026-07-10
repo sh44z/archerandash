@@ -62,7 +62,7 @@ interface Contact {
 }
 
 
-type TabType = 'products' | 'categories' | 'orders' | 'subscriptions' | 'contacts' | 'inspiration' | 'discount-codes';
+type TabType = 'products' | 'categories' | 'orders' | 'subscriptions' | 'contacts' | 'inspiration' | 'discount-codes' | 'users';
 
 
 export default function HubPage() {
@@ -76,6 +76,18 @@ export default function HubPage() {
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    // User management state
+    const [users, setUsers] = useState<any[]>([]);
+    const [currentUserEmail, setCurrentUserEmail] = useState<string>('');
+    const [currentUserId, setCurrentUserId] = useState<string>('');
+    const [editingUser, setEditingUser] = useState<any | null>(null);
+    const [newUserEmail, setNewUserEmail] = useState('');
+    const [newUserPassword, setNewUserPassword] = useState('');
+    const [editUserEmail, setEditUserEmail] = useState('');
+    const [editUserPassword, setEditUserPassword] = useState('');
+    const [userFormError, setUserFormError] = useState('');
+    const [userFormSuccess, setUserFormSuccess] = useState('');
 
     const fetchProducts = () => {
         fetch('/api/products')
@@ -137,6 +149,126 @@ export default function HubPage() {
         }
     };
 
+    const fetchUsers = async () => {
+        try {
+            const response = await fetch('/api/users');
+            if (!response.ok) {
+                throw new Error('Failed to fetch users');
+            }
+            const data = await response.json();
+            setUsers(data);
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            setError('Failed to load users');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchCurrentUser = async () => {
+        try {
+            const response = await fetch('/api/auth/check');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.authenticated && data.user) {
+                    setCurrentUserEmail(data.user.email || '');
+                    setCurrentUserId(data.user.userId || '');
+                }
+            }
+        } catch (error) {
+            console.error('Error checking auth:', error);
+        }
+    };
+
+    const handleCreateUser = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setUserFormError('');
+        setUserFormSuccess('');
+        try {
+            const res = await fetch('/api/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: newUserEmail, password: newUserPassword }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setUserFormSuccess('User created successfully!');
+                setNewUserEmail('');
+                setNewUserPassword('');
+                fetchUsers();
+            } else {
+                setUserFormError(data.error || 'Failed to create user');
+            }
+        } catch (error) {
+            console.error('Error creating user:', error);
+            setUserFormError('Failed to create user. Please try again.');
+        }
+    };
+
+    const handleUpdateUser = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingUser) return;
+        setUserFormError('');
+        setUserFormSuccess('');
+        try {
+            const res = await fetch(`/api/users/${editingUser._id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    email: editUserEmail, 
+                    password: editUserPassword || undefined
+                }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setUserFormSuccess('User updated successfully!');
+                setEditingUser(null);
+                setEditUserEmail('');
+                setEditUserPassword('');
+                fetchUsers();
+                if (editingUser._id === currentUserId) {
+                    fetchCurrentUser();
+                }
+            } else {
+                setUserFormError(data.error || 'Failed to update user');
+            }
+        } catch (error) {
+            console.error('Error updating user:', error);
+            setUserFormError('Failed to update user. Please try again.');
+        }
+    };
+
+    const handleDeleteUser = async (userId: string, userEmail: string) => {
+        if (userId === currentUserId) {
+            alert('You cannot delete your own account while logged in.');
+            return;
+        }
+        if (!confirm(`Are you sure you want to delete user "${userEmail}"?`)) {
+            return;
+        }
+        setUserFormError('');
+        setUserFormSuccess('');
+        try {
+            const res = await fetch(`/api/users/${userId}`, {
+                method: 'DELETE',
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setUserFormSuccess('User deleted successfully.');
+                fetchUsers();
+            } else {
+                alert(data.error || 'Failed to delete user');
+            }
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            alert('Failed to delete user. Please try again.');
+        }
+    };
+
+    useEffect(() => {
+        fetchCurrentUser();
+    }, []);
+
     useEffect(() => {
         if (activeTab === 'products') {
             fetchProducts();
@@ -148,6 +280,8 @@ export default function HubPage() {
             fetchBlogPosts();
         } else if (activeTab === 'discount-codes') {
             fetch('/api/discount-codes').then(res => res.json()).then(data => { setDiscountCodes(data); setLoading(false); }).catch(console.error);
+        } else if (activeTab === 'users') {
+            fetchUsers();
         }
     }, [activeTab]);
 
@@ -297,7 +431,8 @@ export default function HubPage() {
                             { id: 'contacts', label: 'Contact Forms' },
                             { id: 'subscriptions', label: 'Subscriptions', href: '/hub/subscriptions' },
                             { id: 'inspiration', label: 'Inspiration' },
-                            { id: 'discount-codes', label: 'Discount Codes' }
+                            { id: 'discount-codes', label: 'Discount Codes' },
+                            { id: 'users', label: 'Users' }
                         ].map((tab) => (
                             <button
                                 key={tab.id}
@@ -782,6 +917,169 @@ export default function HubPage() {
                                 ))
                             )}
                         </ul>
+                    </div>
+                )}
+
+                {activeTab === 'users' && (
+                    <div>
+                        {userFormError && (
+                            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 flex justify-between items-center">
+                                <span>{userFormError}</span>
+                                <button onClick={() => setUserFormError('')} className="font-bold text-lg leading-none">×</button>
+                            </div>
+                        )}
+                        {userFormSuccess && (
+                            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6 flex justify-between items-center">
+                                <span>{userFormSuccess}</span>
+                                <button onClick={() => setUserFormSuccess('')} className="font-bold text-lg leading-none">×</button>
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Users List */}
+                            <div className="lg:col-span-2">
+                                <div className="bg-white rounded-lg shadow-sm border">
+                                    <div className="p-6 border-b flex justify-between items-center">
+                                        <h2 className="text-xl font-semibold text-gray-900">
+                                            User Accounts ({users.length})
+                                        </h2>
+                                    </div>
+                                    <div className="divide-y divide-gray-200">
+                                        {loading ? (
+                                            <div className="p-6 text-center text-gray-500">Loading users...</div>
+                                        ) : users.length === 0 ? (
+                                            <div className="p-6 text-center text-gray-500">No users found</div>
+                                        ) : (
+                                            users.map((u) => (
+                                                <div key={u._id} className="p-4 hover:bg-gray-50 flex items-center justify-between transition-colors">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="font-medium text-gray-900 text-sm sm:text-base">{u.email}</span>
+                                                        {u._id === currentUserId && (
+                                                            <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                                                                You
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-4">
+                                                        <button
+                                                            onClick={() => {
+                                                                setEditingUser(u);
+                                                                setEditUserEmail(u.email);
+                                                                setEditUserPassword('');
+                                                                setUserFormError('');
+                                                                setUserFormSuccess('');
+                                                            }}
+                                                            className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                        {u._id !== currentUserId ? (
+                                                            <button
+                                                                onClick={() => handleDeleteUser(u._id, u.email)}
+                                                                className="text-red-600 hover:text-red-900 text-sm font-medium"
+                                                            >
+                                                                Delete
+                                                            </button>
+                                                        ) : (
+                                                            <span className="text-gray-300 text-sm cursor-not-allowed select-none" title="You cannot delete yourself">
+                                                                Delete
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* User Form */}
+                            <div className="lg:col-span-1">
+                                {!editingUser ? (
+                                    <div className="bg-white rounded-lg shadow-sm border p-6">
+                                        <h3 className="text-lg font-medium text-gray-900 mb-4">Add User</h3>
+                                        <form onSubmit={handleCreateUser} className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                                                <input
+                                                    type="email"
+                                                    required
+                                                    value={newUserEmail}
+                                                    onChange={(e) => setNewUserEmail(e.target.value)}
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white"
+                                                    placeholder="staff@archerandash.com"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Password</label>
+                                                <input
+                                                    type="password"
+                                                    required
+                                                    minLength={6}
+                                                    value={newUserPassword}
+                                                    onChange={(e) => setNewUserPassword(e.target.value)}
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white"
+                                                    placeholder="••••••••"
+                                                />
+                                            </div>
+                                            <button
+                                                type="submit"
+                                                className="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors text-sm font-medium cursor-pointer"
+                                            >
+                                                Create Account
+                                            </button>
+                                        </form>
+                                    </div>
+                                ) : (
+                                    <div className="bg-white rounded-lg shadow-sm border p-6">
+                                        <h3 className="text-lg font-medium text-gray-900 mb-4">Edit User</h3>
+                                        <form onSubmit={handleUpdateUser} className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                                                <input
+                                                    type="email"
+                                                    required
+                                                    value={editUserEmail}
+                                                    onChange={(e) => setEditUserEmail(e.target.value)}
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Password</label>
+                                                <input
+                                                    type="password"
+                                                    minLength={6}
+                                                    value={editUserPassword}
+                                                    onChange={(e) => setEditUserPassword(e.target.value)}
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white"
+                                                    placeholder="Leave blank to keep current"
+                                                />
+                                            </div>
+                                            <div className="flex gap-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setEditingUser(null);
+                                                        setEditUserEmail('');
+                                                        setEditUserPassword('');
+                                                        setUserFormError('');
+                                                    }}
+                                                    className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors text-sm font-medium border cursor-pointer"
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    type="submit"
+                                                    className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors text-sm font-medium cursor-pointer"
+                                                >
+                                                    Save
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
