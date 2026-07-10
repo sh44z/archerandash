@@ -23,6 +23,7 @@ export interface IOrder extends Document {
         price: number;
         quantity: number;
         subtotal: number;
+        image?: string;
     }>;
     status: 'paid' | 'shipped' | 'completed' | 'cancelled';
     orderDate: Date;
@@ -52,7 +53,8 @@ const OrderSchema: Schema = new Schema({
         size: { type: String, required: true },
         price: { type: Number, required: true },
         quantity: { type: Number, required: true },
-        subtotal: { type: Number, required: true }
+        subtotal: { type: Number, required: true },
+        image: { type: String }
     }],
     status: { type: String, enum: ['paid', 'shipped', 'completed', 'cancelled'], default: 'paid' },
     orderDate: { type: Date, default: Date.now },

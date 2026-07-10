@@ -34,11 +34,41 @@ export default function CheckoutPage() {
         try {
             const details = await actions.order.capture();
 
+            // Extract customer info from PayPal details
+            const name = details.payer?.name
+                ? `${details.payer.name.given_name} ${details.payer.name.surname}`
+                : (details.purchase_units?.[0]?.shipping?.name?.full_name || 'Unknown');
+            
+            const email = details.payer?.email_address || 'Unknown';
+            
+            const shippingAddress = details.purchase_units?.[0]?.shipping?.address;
+            const address = shippingAddress ? {
+                line1: shippingAddress.address_line_1 || '',
+                line2: shippingAddress.address_line_2 || '',
+                city: shippingAddress.admin_area_2 || '',
+                state: shippingAddress.admin_area_1 || '',
+                postal_code: shippingAddress.postal_code || '',
+                country_code: shippingAddress.country_code || ''
+            } : undefined;
+
             // Notify backend
             const orderDetails = {
                 paypalOrderId: details.id,
-                total: cartTotal.toFixed(2),
-                products: items.map(item => ({ productId: item.productId, productName: item.title, price: item.price, quantity: item.quantity })),
+                total: finalTotal.toFixed(2),
+                customer: {
+                    name,
+                    email,
+                    address
+                },
+                products: items.map(item => ({
+                    productId: item.productId,
+                    productName: item.title,
+                    size: item.size,
+                    price: item.price,
+                    quantity: item.quantity,
+                    subtotal: item.price * item.quantity,
+                    image: item.image
+                })),
                 orderDate: new Date().toISOString()
             };
 
