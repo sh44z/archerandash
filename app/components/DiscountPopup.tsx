@@ -34,6 +34,7 @@ export default function DiscountPopup() {
     const [validatedDiscount, setValidatedDiscount] = useState<{ type: 'percentage' | 'fixed'; value: number } | null>(null);
     const [isCopied, setIsCopied] = useState(false);
     const [shouldAutoOpen, setShouldAutoOpen] = useState(true);
+    const [latestCode, setLatestCode] = useState<string | null>(null);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -146,6 +147,7 @@ export default function DiscountPopup() {
                 setIsTyping(false);
                 setIsSubmitted(true);
                 localStorage.setItem('has_interacted_discount_popup', 'submitted');
+                setLatestCode(settings?.discountCode || 'WELCOME15');
                 
                 setMessages(prev => [
                     ...prev,
@@ -171,10 +173,46 @@ export default function DiscountPopup() {
     };
 
     const handleCopyCode = () => {
-        if (!settings?.discountCode) return;
-        navigator.clipboard.writeText(settings.discountCode);
+        const copyText = latestCode || settings?.discountCode;
+        if (!copyText) return;
+        navigator.clipboard.writeText(copyText);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
+    };
+
+    const applyCode = async (code?: string) => {
+        const codeToUse = code || latestCode || settings?.discountCode;
+        if (!codeToUse) return;
+
+        // If we already validated, use that
+        if (validatedDiscount) {
+            applyDiscount(codeToUse, validatedDiscount.type, validatedDiscount.value);
+            return;
+        }
+
+        // Validate via API then apply
+        try {
+            const res = await fetch('/api/discount-codes/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: codeToUse })
+            });
+            if (!res.ok) {
+                throw new Error('Validation failed');
+            }
+            const data = await res.json();
+            if (data.valid) {
+                const type = data.discountType as 'percentage' | 'fixed';
+                const value = data.discountValue as number;
+                setValidatedDiscount({ type, value });
+                applyDiscount(codeToUse, type, value);
+            } else {
+                setErrorMsg('Sorry, that discount code is not valid.');
+            }
+        } catch (err) {
+            console.error('Error validating code:', err);
+            setErrorMsg('Could not validate discount code.');
+        }
     };
 
     const handleApplyDiscount = () => {
@@ -368,10 +406,28 @@ export default function DiscountPopup() {
             {/* Input Footer */}
             <div className="p-3 border-t border-gray-100 bg-white">
                 {isSubmitted ? (
-                    <div className="text-center text-xs text-green-600 font-semibold py-1">
-                        Discount code unlocked! 🎉
-                    </div>
-                ) : (
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="flex-1 text-sm">
+                                <div className="text-xs text-gray-500 uppercase font-medium">Discount unlocked</div>
+                                <div className="mt-1 text-lg font-extrabold text-indigo-600 font-mono">{latestCode || settings?.discountCode}</div>
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleCopyCode}
+                                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg text-sm font-semibold transition-all"
+                                >
+                                    {isCopied ? 'Copied!' : 'Copy'}
+                                </button>
+                                <button
+                                    onClick={() => applyCode()}
+                                    disabled={appliedDiscount?.code === (latestCode || settings?.discountCode)}
+                                    className={`bg-indigo-600 text-white py-2 px-3 rounded-lg text-sm font-semibold transition-all ${appliedDiscount?.code === (latestCode || settings?.discountCode) ? 'bg-green-600 cursor-default' : 'hover:bg-indigo-700'}`}
+                                >
+                                    {appliedDiscount?.code === (latestCode || settings?.discountCode) ? 'Applied ✓' : 'Apply'}
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
                     <form onSubmit={handleSubmitEmail} className="flex gap-2">
                         <div className="relative flex-1">
                             <input
