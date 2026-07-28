@@ -196,13 +196,12 @@ export default function DiscountPopup() {
         localStorage.setItem('has_interacted_discount_popup', 'closed');
     };
 
-    if (!settings || !settings.isEnabled) return null;
+    const hasClosed = typeof window !== 'undefined' && localStorage.getItem('has_interacted_discount_popup') === 'closed';
+
+    if (!settings || !settings.isEnabled || cartCount === 0 || isSubmitted || hasClosed) return null;
 
     // Render launcher button if pop-up is not open but can be re-opened manually, or if minimized
     if (!isOpen || isMinimized) {
-        // If user already submitted, we can choose not to display anything, or keep the option to re-open
-        // Let's hide it if already submitted, otherwise show minimized launcher
-        if (isSubmitted) return null;
 
         return (
             <button
