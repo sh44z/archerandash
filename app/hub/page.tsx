@@ -72,6 +72,16 @@ export default function HubPage() {
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
     const [discountCodes, setDiscountCodes] = useState<any[]>([]);
+    const [popupSettings, setPopupSettings] = useState<any>({
+        isEnabled: true,
+        chatTitle: 'Olivia from Archer & Ash',
+        chatMessage: '',
+        discountCode: '',
+        successMessage: '',
+        placeholderText: 'Enter your email...',
+        avatarUrl: '/images/logo.jpg'
+    });
+    const [isSavingPopup, setIsSavingPopup] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [loading, setLoading] = useState(true);
@@ -265,6 +275,31 @@ export default function HubPage() {
         }
     };
 
+    const handleSavePopupSettings = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSavingPopup(true);
+        try {
+            const res = await fetch('/api/discount-codes/popup-settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(popupSettings)
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setPopupSettings(data);
+                alert('Popup settings saved successfully!');
+            } else {
+                const error = await res.json();
+                alert(error.error || 'Failed to save settings');
+            }
+        } catch (error) {
+            console.error('Error saving popup settings:', error);
+            alert('Failed to save settings. Please try again.');
+        } finally {
+            setIsSavingPopup(false);
+        }
+    };
+
     useEffect(() => {
         fetchCurrentUser();
     }, []);
@@ -279,7 +314,18 @@ export default function HubPage() {
         } else if (activeTab === 'inspiration') {
             fetchBlogPosts();
         } else if (activeTab === 'discount-codes') {
-            fetch('/api/discount-codes').then(res => res.json()).then(data => { setDiscountCodes(data); setLoading(false); }).catch(console.error);
+            setLoading(true);
+            Promise.all([
+                fetch('/api/discount-codes').then(res => res.json()),
+                fetch('/api/discount-codes/popup-settings').then(res => res.json())
+            ]).then(([codesData, settingsData]) => {
+                if (Array.isArray(codesData)) setDiscountCodes(codesData);
+                if (settingsData && !settingsData.error) setPopupSettings(settingsData);
+                setLoading(false);
+            }).catch(err => {
+                console.error(err);
+                setLoading(false);
+            });
         } else if (activeTab === 'users') {
             fetchUsers();
         }
@@ -846,77 +892,197 @@ export default function HubPage() {
                     </div>
                 )}
                 {activeTab === 'discount-codes' && (
-                    <div className="bg-white shadow rounded-lg overflow-hidden p-6 mt-8">
-                        <div className="border-b border-gray-200 pb-4 mb-4 flex justify-between items-center">
-                            <h2 className="text-lg font-medium text-gray-900">Discount Codes</h2>
-                        </div>
-                        <form onSubmit={async (e) => {
-                            e.preventDefault();
-                            const formData = new FormData(e.currentTarget);
-                            const res = await fetch('/api/discount-codes', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    code: formData.get('code'),
-                                    discountType: formData.get('discountType'),
-                                    discountValue: formData.get('discountValue'),
-                                })
-                            });
-                            if (res.ok) {
-                                (e.target as HTMLFormElement).reset();
-                                fetch('/api/discount-codes').then(r => r.json()).then(setDiscountCodes);
-                            } else {
-                                const error = await res.json();
-                                alert(error.error || 'Failed to create discount code');
-                            }
-                        }} className="mb-8 bg-gray-50 p-4 rounded-lg flex gap-4 items-end flex-wrap">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Code</label>
-                                <input type="text" name="code" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white" placeholder="e.g. SAVE20" />
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                        {/* Column 1: Manage Discount Codes */}
+                        <div className="bg-white shadow rounded-lg overflow-hidden p-6">
+                            <div className="border-b border-gray-200 pb-4 mb-4">
+                                <h2 className="text-lg font-medium text-gray-900">Discount Codes</h2>
+                                <p className="text-xs text-gray-500 mt-1">Create and delete discount codes for checkout.</p>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Type</label>
-                                <select name="discountType" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white">
-                                    <option value="percentage">Percentage (%)</option>
-                                    <option value="fixed">Fixed Amount (£)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Value</label>
-                                <input type="number" name="discountValue" required min="1" step="0.01" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white" placeholder="e.g. 20" />
-                            </div>
-                            <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 h-9 mb-0.5">
-                                Add Code
-                            </button>
-                        </form>
+                            <form onSubmit={async (e) => {
+                                e.preventDefault();
+                                const formData = new FormData(e.currentTarget);
+                                const res = await fetch('/api/discount-codes', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        code: formData.get('code'),
+                                        discountType: formData.get('discountType'),
+                                        discountValue: formData.get('discountValue'),
+                                    })
+                                });
+                                if (res.ok) {
+                                    (e.target as HTMLFormElement).reset();
+                                    fetch('/api/discount-codes').then(r => r.json()).then(setDiscountCodes);
+                                } else {
+                                    const error = await res.json();
+                                    alert(error.error || 'Failed to create discount code');
+                                }
+                            }} className="mb-8 bg-gray-50 p-4 rounded-lg flex gap-4 items-end flex-wrap">
+                                <div className="flex-1 min-w-[120px]">
+                                    <label className="block text-sm font-medium text-gray-700">Code</label>
+                                    <input type="text" name="code" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white" placeholder="e.g. SAVE20" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Type</label>
+                                    <select name="discountType" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white">
+                                        <option value="percentage">Percentage (%)</option>
+                                        <option value="fixed">Fixed Amount (£)</option>
+                                    </select>
+                                </div>
+                                <div className="w-[100px]">
+                                    <label className="block text-sm font-medium text-gray-700">Value</label>
+                                    <input type="number" name="discountValue" required min="1" step="0.01" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white" placeholder="e.g. 20" />
+                                </div>
+                                <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 h-9 mb-0.5 whitespace-nowrap">
+                                    Add Code
+                                </button>
+                            </form>
 
-                        <ul className="divide-y divide-gray-200">
-                            {discountCodes.length === 0 ? (
-                                <li className="py-4 text-center text-gray-500">No discount codes found.</li>
-                            ) : (
-                                discountCodes.map((dc) => (
-                                    <li key={dc._id} className="py-4 flex justify-between items-center">
-                                        <div>
-                                            <h3 className="text-sm font-bold text-gray-900">{dc.code}</h3>
-                                            <p className="text-sm text-gray-500">
-                                                {dc.discountType === 'percentage' ? `${dc.discountValue}% off` : `£${dc.discountValue} off`}
-                                            </p>
-                                        </div>
-                                        <button
-                                            onClick={async () => {
-                                                if (confirm('Delete this code?')) {
-                                                    const res = await fetch(`/api/discount-codes/${dc._id}`, { method: 'DELETE' });
-                                                    if (res.ok) fetch('/api/discount-codes').then(r => r.json()).then(setDiscountCodes);
-                                                }
-                                            }}
-                                            className="text-red-600 hover:text-red-900 text-sm font-medium"
-                                        >
-                                            Delete
-                                        </button>
-                                    </li>
-                                ))
-                            )}
-                        </ul>
+                            <ul className="divide-y divide-gray-200">
+                                {discountCodes.length === 0 ? (
+                                    <li className="py-4 text-center text-gray-500 text-sm">No discount codes found.</li>
+                                ) : (
+                                    discountCodes.map((dc) => (
+                                        <li key={dc._id} className="py-4 flex justify-between items-center">
+                                            <div>
+                                                <h3 className="text-sm font-bold text-gray-900">{dc.code}</h3>
+                                                <p className="text-xs text-gray-500">
+                                                    {dc.discountType === 'percentage' ? `${dc.discountValue}% off` : `£${dc.discountValue} off`}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={async () => {
+                                                    if (confirm('Delete this code?')) {
+                                                        const res = await fetch(`/api/discount-codes/${dc._id}`, { method: 'DELETE' });
+                                                        if (res.ok) fetch('/api/discount-codes').then(r => r.json()).then(setDiscountCodes);
+                                                    }
+                                                }}
+                                                className="text-red-600 hover:text-red-900 text-sm font-medium"
+                                            >
+                                                Delete
+                                            </button>
+                                        </li>
+                                    ))
+                                )}
+                            </ul>
+                        </div>
+
+                        {/* Column 2: Live Chat Discount Popup Settings */}
+                        <div className="bg-white shadow rounded-lg overflow-hidden p-6">
+                            <div className="border-b border-gray-200 pb-4 mb-4 flex justify-between items-start">
+                                <div>
+                                    <h2 className="text-lg font-medium text-gray-900">Add-to-Basket Chat Popup</h2>
+                                    <p className="text-xs text-gray-500 mt-1">Configure the live-chat popup that appears when customers add items to their basket.</p>
+                                </div>
+                            </div>
+
+                            <form onSubmit={handleSavePopupSettings} className="space-y-4">
+                                <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-semibold text-gray-900">Enable Popup</span>
+                                        <span className="text-xs text-gray-500">Enable or disable the popup widget globally</span>
+                                    </div>
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={popupSettings.isEnabled}
+                                            onChange={(e) => setPopupSettings({ ...popupSettings, isEnabled: e.target.checked })}
+                                            className="sr-only peer"
+                                        />
+                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                    </label>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Chat Title</label>
+                                        <input
+                                            type="text"
+                                            value={popupSettings.chatTitle || ''}
+                                            onChange={(e) => setPopupSettings({ ...popupSettings, chatTitle: e.target.value })}
+                                            required
+                                            placeholder="Olivia from Archer & Ash"
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Avatar Image Path / URL</label>
+                                        <input
+                                            type="text"
+                                            value={popupSettings.avatarUrl || ''}
+                                            onChange={(e) => setPopupSettings({ ...popupSettings, avatarUrl: e.target.value })}
+                                            placeholder="/images/logo.jpg"
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Link Discount Code</label>
+                                    <select
+                                        value={popupSettings.discountCode || ''}
+                                        onChange={(e) => setPopupSettings({ ...popupSettings, discountCode: e.target.value })}
+                                        required
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white"
+                                    >
+                                        <option value="">Select a discount code...</option>
+                                        {discountCodes.map((dc) => (
+                                            <option key={dc._id} value={dc.code}>
+                                                {dc.code} ({dc.discountType === 'percentage' ? `${dc.discountValue}%` : `£${dc.discountValue}`} off)
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <p className="text-xs text-gray-400 mt-1">This is the code that will be offered to users after subscribing.</p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Chat Prompt Message</label>
+                                    <textarea
+                                        value={popupSettings.chatMessage || ''}
+                                        onChange={(e) => setPopupSettings({ ...popupSettings, chatMessage: e.target.value })}
+                                        required
+                                        rows={3}
+                                        placeholder="Hey there! Thanks for adding an item to your basket. Enter your email below to get a 15% discount code instantly!"
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Email Input Placeholder</label>
+                                        <input
+                                            type="text"
+                                            value={popupSettings.placeholderText || ''}
+                                            onChange={(e) => setPopupSettings({ ...popupSettings, placeholderText: e.target.value })}
+                                            placeholder="Enter your email..."
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Success Message</label>
+                                        <input
+                                            type="text"
+                                            value={popupSettings.successMessage || ''}
+                                            onChange={(e) => setPopupSettings({ ...popupSettings, successMessage: e.target.value })}
+                                            required
+                                            placeholder="Awesome! Use your code at checkout for 15% off."
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="pt-2 border-t border-gray-100 flex justify-end">
+                                    <button
+                                        type="submit"
+                                        disabled={isSavingPopup}
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-semibold text-sm shadow transition-colors flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                        {isSavingPopup ? 'Saving...' : 'Save Popup Settings'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 )}
 
