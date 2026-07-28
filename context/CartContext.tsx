@@ -22,6 +22,7 @@ interface CartContextType {
     setIsCartOpen: (isOpen: boolean) => void;
     cartTotal: number;
     cartCount: number;
+    cartActivityKey: number;
     appliedDiscount: { code: string; type: 'percentage' | 'fixed'; value: number } | null;
     applyDiscount: (code: string, type: 'percentage' | 'fixed', value: number) => void;
     removeDiscount: () => void;
@@ -34,6 +35,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
+    const [cartActivityKey, setCartActivityKey] = useState(0);
     const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; type: 'percentage' | 'fixed'; value: number } | null>(null);
 
     const applyDiscount = (code: string, type: 'percentage' | 'fixed', value: number) => {
@@ -75,6 +77,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 return [...currentItems, { ...newItem, variantId, quantity: newItem.quantity }];
             }
         });
+        setCartActivityKey((current) => current + 1);
         setIsCartOpen(true);
     };
 
@@ -107,7 +110,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const cartCount = items.reduce((total, item) => total + item.quantity, 0);
 
     return (
-        <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, isCartOpen, setIsCartOpen, cartTotal, cartCount, appliedDiscount, applyDiscount, removeDiscount, finalTotal }}>
+        <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, isCartOpen, setIsCartOpen, cartTotal, cartCount, cartActivityKey, appliedDiscount, applyDiscount, removeDiscount, finalTotal }}>
             {children}
         </CartContext.Provider>
     );

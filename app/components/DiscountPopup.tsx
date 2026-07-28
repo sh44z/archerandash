@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useCart } from '@/context/CartContext';
 
 interface Message {
@@ -21,7 +21,7 @@ interface PopupSettings {
 }
 
 export default function DiscountPopup() {
-    const { cartCount, applyDiscount, appliedDiscount } = useCart();
+    const { cartCount, cartActivityKey, applyDiscount, appliedDiscount } = useCart();
     const [settings, setSettings] = useState<PopupSettings | null>(null);
     const [isOpen, setIsOpen] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
@@ -33,10 +33,9 @@ export default function DiscountPopup() {
     const [errorMsg, setErrorMsg] = useState('');
     const [validatedDiscount, setValidatedDiscount] = useState<{ type: 'percentage' | 'fixed'; value: number } | null>(null);
     const [isCopied, setIsCopied] = useState(false);
+    const [shouldAutoOpen, setShouldAutoOpen] = useState(true);
 
-    const prevCartCount = useRef(0);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const popupOpenedRef = useRef(false);
 
     // Fetch settings on mount
     useEffect(() => {
@@ -84,23 +83,7 @@ export default function DiscountPopup() {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isTyping]);
 
-    // Handle cart addition trigger
-    useEffect(() => {
-        if (!settings || !settings.isEnabled || isSubmitted) return;
-
-        const interacted = localStorage.getItem('has_interacted_discount_popup');
-        if (interacted) return; // Do not auto-open if closed or submitted
-
-        // Trigger when item count goes from 0 to > 0
-        if (prevCartCount.current === 0 && cartCount > 0 && !popupOpenedRef.current) {
-            popupOpenedRef.current = true;
-            triggerChatSequence();
-        }
-
-        prevCartCount.current = cartCount;
-    }, [cartCount, settings, isSubmitted]);
-
-    const triggerChatSequence = () => {
+    const triggerChatSequence = useCallback(() => {
         setIsOpen(true);
         setIsMinimized(false);
         setIsTyping(true);
@@ -117,7 +100,15 @@ export default function DiscountPopup() {
                 }
             ]);
         }, 1200);
-    };
+    }, [settings]);
+
+    useEffect(() => {
+        if (!settings || !settings.isEnabled || isSubmitted || !shouldAutoOpen || isOpen) return;
+        if (cartActivityKey > 0) {
+            setShouldAutoOpen(false);
+            triggerChatSequence();
+        }
+    }, [cartActivityKey, settings, isSubmitted, isOpen, shouldAutoOpen, triggerChatSequence]);
 
     const handleSubmitEmail = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -193,12 +184,13 @@ export default function DiscountPopup() {
 
     const handleClose = () => {
         setIsOpen(false);
-        localStorage.setItem('has_interacted_discount_popup', 'closed');
+        setShouldAutoOpen(true);
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('has_interacted_discount_popup');
+        }
     };
 
-    const hasClosed = typeof window !== 'undefined' && localStorage.getItem('has_interacted_discount_popup') === 'closed';
-
-    if (!settings || !settings.isEnabled || cartCount === 0 || isSubmitted || hasClosed) return null;
+    if (!settings || !settings.isEnabled || cartCount === 0 || isSubmitted) return null;
 
     // Render launcher button if pop-up is not open but can be re-opened manually, or if minimized
     if (!isOpen || isMinimized) {
