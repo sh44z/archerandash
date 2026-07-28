@@ -184,13 +184,20 @@ export default function DiscountPopup() {
 
     const handleClose = () => {
         setIsOpen(false);
+        setIsMinimized(false);
+        setIsSubmitted(false);
+        setEmail('');
+        setErrorMsg('');
+        setIsTyping(false);
+        setMessages([]);
         setShouldAutoOpen(true);
         if (typeof window !== 'undefined') {
             localStorage.removeItem('has_interacted_discount_popup');
         }
     };
 
-    if (!settings || !settings.isEnabled || cartCount === 0 || isSubmitted) return null;
+    if (!settings || !settings.isEnabled) return null;
+    if (cartCount === 0 && !isOpen && !isSubmitted) return null;
 
     // Render launcher button if pop-up is not open but can be re-opened manually, or if minimized
     if (!isOpen || isMinimized) {
