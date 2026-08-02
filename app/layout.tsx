@@ -123,7 +123,7 @@ export default function RootLayout({
         </Script>
         <noscript dangerouslySetInnerHTML={{ __html: '<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2504551413308453&ev=PageView&noscript=1"/>' }} />
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-JE6KDQ1DHQ"
+          src="https://www.googletagmanager.com/gtag/js?id=G-7DQRTFLTTD"
           strategy="afterInteractive"
         />
         <Script id="google-analytics" strategy="afterInteractive">
@@ -132,7 +132,7 @@ export default function RootLayout({
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
 
-            gtag('config', 'G-JE6KDQ1DHQ');
+            gtag('config', 'G-7DQRTFLTTD');
           `}
         </Script>
       </body>
