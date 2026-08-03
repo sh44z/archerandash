@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 
 interface Product {
@@ -61,8 +61,44 @@ interface Contact {
     createdAt: string;
 }
 
+interface LiveChatThread {
+    _id: string;
+    visitorName: string;
+    visitorEmail: string;
+    status: 'new' | 'open' | 'resolved' | 'archived';
+    messages: Array<{
+        sender: 'visitor' | 'agent';
+        text: string;
+        createdAt?: string;
+        isRead?: boolean;
+    }>;
+    createdAt: string;
+    updatedAt: string;
+}
 
-type TabType = 'products' | 'categories' | 'orders' | 'subscriptions' | 'contacts' | 'inspiration' | 'discount-codes' | 'users';
+interface DiscountCode {
+    _id: string;
+    code: string;
+    discountType: 'percentage' | 'fixed';
+    discountValue: number;
+}
+
+interface PopupSettingsState {
+    isEnabled: boolean;
+    chatTitle: string;
+    chatMessage: string;
+    discountCode: string;
+    successMessage: string;
+    placeholderText: string;
+    avatarUrl: string;
+}
+
+interface UserAccount {
+    _id: string;
+    email: string;
+}
+
+type TabType = 'products' | 'categories' | 'orders' | 'subscriptions' | 'contacts' | 'inspiration' | 'discount-codes' | 'users' | 'live-chat';
 
 
 export default function HubPage() {
@@ -71,8 +107,12 @@ export default function HubPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
-    const [discountCodes, setDiscountCodes] = useState<any[]>([]);
-    const [popupSettings, setPopupSettings] = useState<any>({
+    const [discountCodes, setDiscountCodes] = useState<DiscountCode[]>([]);
+    const [liveChatThreads, setLiveChatThreads] = useState<LiveChatThread[]>([]);
+    const [selectedLiveChatThread, setSelectedLiveChatThread] = useState<LiveChatThread | null>(null);
+    const [liveChatReply, setLiveChatReply] = useState('');
+    const [isSendingReply, setIsSendingReply] = useState(false);
+    const [popupSettings, setPopupSettings] = useState<PopupSettingsState>({
         isEnabled: true,
         chatTitle: 'Olivia from Archer & Ash',
         chatMessage: '',
@@ -88,10 +128,9 @@ export default function HubPage() {
     const [error, setError] = useState('');
 
     // User management state
-    const [users, setUsers] = useState<any[]>([]);
-    const [currentUserEmail, setCurrentUserEmail] = useState<string>('');
+    const [users, setUsers] = useState<UserAccount[]>([]);
     const [currentUserId, setCurrentUserId] = useState<string>('');
-    const [editingUser, setEditingUser] = useState<any | null>(null);
+    const [editingUser, setEditingUser] = useState<UserAccount | null>(null);
     const [newUserEmail, setNewUserEmail] = useState('');
     const [newUserPassword, setNewUserPassword] = useState('');
     const [editUserEmail, setEditUserEmail] = useState('');
@@ -175,13 +214,30 @@ export default function HubPage() {
         }
     };
 
+    const fetchLiveChatThreads = useCallback(async () => {
+        try {
+            const response = await fetch('/api/live-chat');
+            if (!response.ok) {
+                throw new Error('Failed to fetch live chat threads');
+            }
+            const data = await response.json();
+            const threads = (data.threads || []) as LiveChatThread[];
+            setLiveChatThreads(threads);
+            if (!selectedLiveChatThread && threads.length > 0) {
+                setSelectedLiveChatThread(threads[0]);
+            }
+        } catch (error) {
+            console.error('Error fetching live chat threads:', error);
+            setError('Failed to load live chat threads');
+        }
+    }, [selectedLiveChatThread]);
+
     const fetchCurrentUser = async () => {
         try {
             const response = await fetch('/api/auth/check');
             if (response.ok) {
                 const data = await response.json();
                 if (data.authenticated && data.user) {
-                    setCurrentUserEmail(data.user.email || '');
                     setCurrentUserId(data.user.userId || '');
                 }
             }
@@ -305,6 +361,14 @@ export default function HubPage() {
     }, []);
 
     useEffect(() => {
+        if (activeTab !== 'live-chat') return;
+        const interval = window.setInterval(() => {
+            fetchLiveChatThreads();
+        }, 5000);
+        return () => window.clearInterval(interval);
+    }, [activeTab, fetchLiveChatThreads]);
+
+    useEffect(() => {
         if (activeTab === 'products') {
             fetchProducts();
         } else if (activeTab === 'orders') {
@@ -328,8 +392,38 @@ export default function HubPage() {
             });
         } else if (activeTab === 'users') {
             fetchUsers();
+        } else if (activeTab === 'live-chat') {
+            fetchLiveChatThreads();
         }
-    }, [activeTab]);
+    }, [activeTab, fetchLiveChatThreads]);
+
+    const handleSendLiveChatReply = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedLiveChatThread || !liveChatReply.trim()) return;
+
+        setIsSendingReply(true);
+        try {
+            const response = await fetch(`/api/live-chat/${selectedLiveChatThread._id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: liveChatReply.trim() }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to send reply');
+            }
+
+            const data = await response.json();
+            setLiveChatReply('');
+            setSelectedLiveChatThread(data.thread);
+            setLiveChatThreads(prev => prev.map(thread => thread._id === data.thread._id ? data.thread : thread));
+        } catch (error) {
+            console.error('Error sending live chat reply:', error);
+            alert('Failed to send reply. Please try again.');
+        } finally {
+            setIsSendingReply(false);
+        }
+    };
 
     const handleDelete = async (productId: string, productTitle: string) => {
         if (!confirm(`Are you sure you want to delete "${productTitle}"? This action cannot be undone.`)) {
@@ -478,6 +572,7 @@ export default function HubPage() {
                             { id: 'subscriptions', label: 'Subscriptions', href: '/hub/subscriptions' },
                             { id: 'inspiration', label: 'Inspiration' },
                             { id: 'discount-codes', label: 'Discount Codes' },
+                            { id: 'live-chat', label: 'Live Chat' },
                             { id: 'users', label: 'Users' }
                         ].map((tab) => (
                             <button
@@ -891,6 +986,88 @@ export default function HubPage() {
                         </div>
                     </div>
                 )}
+                {activeTab === 'live-chat' && (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-1 bg-white rounded-lg shadow-sm border overflow-hidden">
+                            <div className="p-6 border-b">
+                                <h2 className="text-xl font-semibold text-gray-900">Live Chat Inbox</h2>
+                                <p className="text-sm text-gray-500 mt-1">Visitors can leave messages here and you can reply from the hub.</p>
+                                <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                                    Live updates every 5 seconds
+                                </div>
+                            </div>
+                            <div className="divide-y divide-gray-200 max-h-[70vh] overflow-y-auto">
+                                {liveChatThreads.length === 0 ? (
+                                    <div className="p-6 text-center text-gray-500">No chat messages yet</div>
+                                ) : (
+                                    liveChatThreads.map((thread) => (
+                                        <button
+                                            key={thread._id}
+                                            onClick={() => setSelectedLiveChatThread(thread)}
+                                            className={`w-full text-left p-4 hover:bg-gray-50 transition-colors ${selectedLiveChatThread?._id === thread._id ? 'bg-indigo-50' : ''}`}
+                                        >
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="font-medium text-gray-900">{thread.visitorName}</span>
+                                                <span className={`px-2 py-1 text-xs rounded-full ${thread.status === 'new' ? 'bg-yellow-100 text-yellow-800' : thread.status === 'open' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                                                    {thread.status}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-gray-600 mt-1">{thread.visitorEmail}</p>
+                                            <p className="text-xs text-gray-400 mt-2">{formatDate(thread.updatedAt)}</p>
+                                        </button>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border overflow-hidden">
+                            {selectedLiveChatThread ? (
+                                <>
+                                    <div className="p-6 border-b">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div>
+                                                <h2 className="text-xl font-semibold text-gray-900">{selectedLiveChatThread.visitorName}</h2>
+                                                <p className="text-sm text-gray-500">{selectedLiveChatThread.visitorEmail}</p>
+                                            </div>
+                                            <span className={`px-3 py-1 text-xs rounded-full ${selectedLiveChatThread.status === 'new' ? 'bg-yellow-100 text-yellow-800' : selectedLiveChatThread.status === 'open' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                                                {selectedLiveChatThread.status}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-6 space-y-4 bg-gray-50 max-h-[60vh] overflow-y-auto">
+                                        {selectedLiveChatThread.messages.map((message, index) => (
+                                            <div key={`${message.sender}-${index}`} className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${message.sender === 'agent' ? 'bg-white border ml-auto text-gray-800' : 'bg-emerald-600 text-white'}`}>
+                                                {message.text}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <form onSubmit={handleSendLiveChatReply} className="p-6 border-t space-y-3">
+                                        <textarea
+                                            value={liveChatReply}
+                                            onChange={(e) => setLiveChatReply(e.target.value)}
+                                            rows={4}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white"
+                                            placeholder="Type your reply to the customer..."
+                                        />
+                                        <button
+                                            type="submit"
+                                            disabled={isSendingReply}
+                                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md font-semibold text-sm shadow transition-colors disabled:opacity-60"
+                                        >
+                                            {isSendingReply ? 'Sending reply...' : 'Send reply'}
+                                        </button>
+                                    </form>
+                                </>
+                            ) : (
+                                <div className="p-6 text-center text-gray-500">Select a conversation to view it</div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {activeTab === 'discount-codes' && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
                         {/* Column 1: Manage Discount Codes */}
