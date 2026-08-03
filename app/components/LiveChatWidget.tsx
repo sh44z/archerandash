@@ -21,6 +21,7 @@ export default function LiveChatWidget() {
     const [isOpen, setIsOpen] = useState(false);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [message, setMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [statusText, setStatusText] = useState('Leave a message and we will get back to you.');
@@ -32,9 +33,11 @@ export default function LiveChatWidget() {
     useEffect(() => {
         const savedName = window.localStorage.getItem('live-chat-name') || '';
         const savedEmail = window.localStorage.getItem('live-chat-email') || '';
+        const savedPhone = window.localStorage.getItem('live-chat-phone') || '';
         const savedThreadId = window.localStorage.getItem('live-chat-thread-id') || '';
         setName(savedName);
         setEmail(savedEmail);
+        setPhone(savedPhone);
         if (savedThreadId) {
             setThreadId(savedThreadId);
         }
@@ -87,7 +90,7 @@ export default function LiveChatWidget() {
             const res = await fetch('/api/live-chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ visitorName: name, visitorEmail: email, message }),
+                body: JSON.stringify({ visitorName: name, visitorEmail: email, visitorPhone: phone, message }),
             });
 
             const data = await res.json();
@@ -97,6 +100,7 @@ export default function LiveChatWidget() {
 
             window.localStorage.setItem('live-chat-name', name);
             window.localStorage.setItem('live-chat-email', email);
+            window.localStorage.setItem('live-chat-phone', phone);
             window.localStorage.setItem('live-chat-thread-id', data.thread._id);
             setThreadId(data.thread._id);
             setThread(data.thread);
@@ -155,6 +159,7 @@ export default function LiveChatWidget() {
                         <form onSubmit={handleSubmit} className="space-y-2">
                             <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
                             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Your email" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+                            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Your phone number" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
                             <textarea ref={inputRef} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="How can we help?" rows={4} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
                             <button type="submit" disabled={isSubmitting} className="w-full rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-60">
                                 {isSubmitting ? 'Sending...' : 'Send message'}

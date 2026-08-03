@@ -29,6 +29,10 @@ const LiveChatThreadSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please provide visitor email'],
     },
+    visitorPhone: {
+        type: String,
+        default: '',
+    },
     status: {
         type: String,
         enum: ['new', 'open', 'resolved', 'archived'],

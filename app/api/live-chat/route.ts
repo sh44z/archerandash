@@ -32,6 +32,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
+        const visitorPhone = body.visitorPhone || '';
+
         const existingThread = await LiveChatThread.findOne({
             visitorEmail: body.visitorEmail,
             status: { $in: ['new', 'open'] },
@@ -55,6 +57,7 @@ export async function POST(req: Request) {
             thread = await LiveChatThread.create({
                 visitorName: body.visitorName,
                 visitorEmail: body.visitorEmail,
+                visitorPhone,
                 status: 'new',
                 messages: [messagePayload],
                 lastVisitorMessageAt: new Date(),
