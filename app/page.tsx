@@ -103,6 +103,11 @@ export default async function Home() {
         </div>
       </div>
 
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div id="soro-blog"></div>
+        <script src="https://app.trysoro.com/api/embed/3d2963ca-2134-4b81-8ae6-0a98a48014a7" defer></script>
+      </section>
+
       {/* Newsletter / Footer */}
       <NewsletterForm />
     </div>
