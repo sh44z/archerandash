@@ -1,8 +1,7 @@
 import Link from 'next/link';
-import dbConnect from '@/lib/db';
-import BlogPost from '@/models/BlogPost';
 import { Metadata } from 'next';
 import { normalizeDriveLink } from '@/lib/imageUtils';
+import { getStaticInspirationPosts } from '@/lib/inspirationData';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,24 +10,8 @@ export const metadata: Metadata = {
     description: 'Explore our latest articles, design tips, and inspiration for your home decor journey with Archer and Ash.',
 };
 
-async function getBlogPosts() {
-    await dbConnect();
-    // Fetch published posts sorted by newest first
-    const posts = await BlogPost.find({ status: 'published' })
-        .sort({ publishedAt: -1, createdAt: -1 })
-        .lean();
-
-    return posts.map((post: any) => ({
-        ...post,
-        _id: post._id.toString(),
-        createdAt: post.createdAt?.toISOString(),
-        publishedAt: post.publishedAt?.toISOString(),
-        updatedAt: post.updatedAt?.toISOString(),
-    }));
-}
-
 export default async function InspirationPage() {
-    const posts = await getBlogPosts();
+    const posts = getStaticInspirationPosts();
 
     return (
         <div className="bg-white min-h-screen">

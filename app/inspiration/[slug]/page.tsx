@@ -1,9 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import dbConnect from '@/lib/db';
-import BlogPost from '@/models/BlogPost';
 import { Metadata } from 'next';
 import { normalizeDriveLink } from '@/lib/imageUtils';
+import { getStaticInspirationPostBySlug } from '@/lib/inspirationData';
 
 // Force dynamic rendering to ensure fresh content
 export const dynamic = 'force-dynamic';
@@ -12,29 +11,13 @@ interface PageProps {
     params: Promise<{ slug: string }>;
 }
 
-async function getBlogPost(slug: string) {
-    await dbConnect();
-    // Try finding by slug first, then by ID as a fallback
-    let post = await BlogPost.findOne({ slug, status: 'published' }).lean();
-
-    if (!post && slug.match(/^[0-9a-fA-F]{24}$/)) {
-        post = await BlogPost.findOne({ _id: slug, status: 'published' }).lean();
-    }
-
-    if (!post) return null;
-
-    return {
-        ...post,
-        _id: post._id.toString(),
-        createdAt: post.createdAt?.toISOString(),
-        publishedAt: post.publishedAt?.toISOString(),
-        updatedAt: post.updatedAt?.toISOString(),
-    };
+function getBlogPost(slug: string) {
+    return getStaticInspirationPostBySlug(slug);
 }
 
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
     const params = await props.params;
-    const post = await getBlogPost(params.slug);
+    const post = getBlogPost(params.slug);
 
     if (!post) {
         return {
@@ -58,7 +41,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 
 export default async function BlogPostPage(props: PageProps) {
     const params = await props.params;
-    const post = await getBlogPost(params.slug);
+    const post = getBlogPost(params.slug);
 
     if (!post) {
         notFound();
