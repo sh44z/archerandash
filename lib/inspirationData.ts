@@ -114,6 +114,81 @@ const staticInspirationPosts: InspirationPost[] = [
     createdAt: '2026-08-09T00:00:00.000Z',
     updatedAt: '2026-08-09T00:00:00.000Z',
   },
+  {
+    _id: 'static-art-above-sofa-size-guide',
+    title: 'Art Above Sofa Size Guide: How to Choose the Right Piece',
+    slug: 'art-above-sofa-size-guide',
+    excerpt: 'A practical guide to choosing art above a sofa with the right width, height and proportion for your living room.',
+    content: `
+<p>A sofa can be beautifully chosen and still feel unfinished when the wall behind it is left bare. The right artwork gives the seating area a visual anchor, brings your colours together and makes the whole room feel considered. This art above sofa size guide makes the proportions simple, whether you are styling a compact flat, a family living room or a generous open-plan space.</p>
+<h2>The ideal width for art above a sofa</h2>
+<p>The most reliable rule is to choose artwork, or a complete group of artworks, that measures around two-thirds to three-quarters of your sofa’s width. This creates enough presence to balance the furniture without making the wall feel crowded.</p>
+<p>For example, a 180 cm sofa usually suits art with a total width of roughly 120 to 135 cm. Above a 210 cm sofa, look for a single oversized canvas or arrangement spanning about 140 to 160 cm. The measurement is based on the sofa itself, not the wall. A very wide wall can tempt you to fill every inch, but the sofa should remain the visual reference point.</p>
+<p>A piece that is much narrower than half the sofa width often looks isolated, even when the artwork itself is striking. On the other hand, art that extends beyond the sofa can make the composition feel top-heavy. There are exceptions: a large-scale abstract canvas can work slightly wider in a minimal room, especially if the sofa has low arms and a simple silhouette. The overall effect should still feel calm rather than squeezed.</p>
+<h3>A quick size reference</h3>
+<p>Use these proportions as a useful starting point, then adjust for your ceiling height and the amount of surrounding furniture.</p>
+<table>
+<thead>
+<tr>
+<th>Sofa width</th>
+<th>Ideal total art width</th>
+<th>A considered choice</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>150 cm</td>
+<td>100 to 115 cm</td>
+<td>One medium landscape canvas or two coordinated prints</td>
+</tr>
+<tr>
+<td>180 cm</td>
+<td>120 to 135 cm</td>
+<td>One large canvas, a diptych or three framed posters</td>
+</tr>
+<tr>
+<td>210 cm</td>
+<td>140 to 160 cm</td>
+<td>An oversized horizontal piece or a wide triptych</td>
+</tr>
+<tr>
+<td>240 cm or more</td>
+<td>160 to 180 cm</td>
+<td>A substantial multi-panel display or statement canvas</td>
+</tr>
+</tbody></table>
+<p>When shopping by inches, the same principle applies. A 72-inch sofa generally looks balanced with artwork measuring about 48 to 54 inches wide in total.</p>
+<h2>How high should art hang above a sofa?</h2>
+<p>Leave 15 to 20 cm between the top of the sofa and the bottom edge of the frame or canvas. This small gap helps the art and furniture read as one composed zone. Hang it much higher and the artwork can seem to float away from the room’s main seating area.</p>
+<p>The familiar gallery rule of hanging art at eye level is helpful on an empty wall, but it needs adapting above furniture. If your sofa has a tall back, prioritise that 15 to 20 cm gap rather than forcing the centre of the art to a standard height. The aim is not a perfect number on the tape measure. It is a relationship that looks intentional when you are sitting, standing and entering the room.</p>
+<p>If you have lofty ceilings, resist the urge to lift the artwork upwards to occupy more blank space. A taller canvas, a vertical pair or a gallery arrangement can add scale while keeping the lower edge connected to the sofa. This approach makes a high-ceilinged room feel warmer and more grounded.</p>
+<h2>Choose one large piece or a grouped arrangement</h2>
+<p>A single large canvas is often the easiest route to a polished result. It gives a room a confident focal point and lets colour, texture and movement speak clearly from across the space. Landscape artwork is particularly natural over a long sofa, while a wide abstract design can soften a clean-lined contemporary scheme.</p>
+<p>A diptych or triptych offers a similarly tailored look with more rhythm. Treat the panels as one artwork when measuring their width. Keep the gaps consistent, usually around 5 to 8 cm, and include those gaps in the final span. Three 40 cm panels with 6 cm between each measure 132 cm overall, not 120 cm.</p>
+<p>A gallery wall is a more expressive option for renters, collectors and anyone who prefers a layered home. It works best when it has a clear outer shape. Rather than scattering frames across the wall, plan the arrangement as though it sits inside an invisible rectangle that follows the two-thirds rule. A mix of modern art, graphic posters and softer tonal prints can feel personal, but repeat at least one element, such as frame colour, palette or print style, to keep it cohesive.</p>
+<h3>When a vertical layout makes sense</h3>
+<p>A tall, narrow piece above the middle of a wide sofa rarely provides enough visual weight on its own. It can work, however, alongside a floor lamp, shelving or a tall plant that intentionally fills one side of the composition. It can also suit a compact two-seater placed against a narrow wall.</p>
+<p>For larger sofas, use vertical pieces in pairs or as part of a gallery wall. Their combined width and shared alignment will create the balance a single portrait-format print cannot achieve alone.</p>
+<h2>Let the room influence the final size</h2>
+<p>Proportion is the foundation, but your room’s character should shape the final decision. A low-profile sofa in a minimal, airy room can carry substantial artwork because there is less visual competition. A sofa with a high back, bold upholstery or patterned cushions may look better with art that has a little more breathing room.</p>
+<p>Consider what sits beside the sofa, too. A large floor lamp or wide side table adds visual width, while a busy bookcase can make an already detailed gallery wall feel overdone. If the living room has several competing focal points, such as a fireplace, television and feature wallpaper, one calm statement canvas is often more effective than multiple small frames.</p>
+<p>Colour also changes how large art feels. Light, tonal artwork can appear to recede, making it a good choice for a smaller room where you still want generous scale. Deep colours, high contrast and energetic abstract marks have more visual weight. They can make a modestly sized canvas feel more prominent, which is useful if you want drama without covering the entire wall.</p>
+<h2>Mark it out before you commit</h2>
+<p>Before hanging anything, use low-tack masking tape or sheets of paper to map the artwork’s outer dimensions on the wall. Step back to the opposite side of the room, then sit on the sofa and look again. This simple test reveals whether the piece needs more width, a lower position or a little more space at either side.</p>
+<p>For a gallery wall, lay every frame on the floor first. Move the arrangement around until the spacing feels even, then photograph it before transferring the layout to the wall. Begin with the central piece, not the highest one, and work outwards. It is far easier to correct a position on the floor than after several holes have been made.</p>
+<p>If you are decorating a rental, check the weight and fixing requirements of your chosen canvas or framed poster before choosing a hanging method. A lightweight print may suit removable fixings, while larger statement pieces deserve secure wall hardware. Good placement should never come at the expense of a safe installation.</p>
+<h2>Common proportion mistakes to avoid</h2>
+<p>The most common mistake is choosing art because it looks good on its own, rather than because it works with the sofa beneath it. A beautiful small print can get lost above a three-seater, just as an enormous dark canvas can overwhelm a delicate loveseat. Think of the artwork and sofa as one composition, not two separate purchases.</p>
+<p>Another is treating several small pictures as though each needs its own space. When grouped tightly and arranged within one shared outline, smaller prints become a purposeful focal point. When spread too far apart, they create visual clutter instead.</p>
+<p>Finally, do not overlook the space beneath the artwork. Cushions, throws and a coffee table can echo colours or shapes from the art without matching exactly. That subtle repetition is what makes a living room feel styled rather than simply furnished.</p>
+<p>The best piece above your sofa is not necessarily the largest one you can fit. It is the one that gives the seating area presence, reflects your point of view and makes you glad to look up when you settle in at the end of the day.</p>
+`,
+    coverImage: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1400&q=80',
+    author: 'Archer & Ash',
+    status: 'published',
+    publishedAt: '2026-08-10T00:00:00.000Z',
+    createdAt: '2026-08-10T00:00:00.000Z',
+    updatedAt: '2026-08-10T00:00:00.000Z',
+  },
 ];
 
 export function getStaticInspirationPosts(): InspirationPost[] {
