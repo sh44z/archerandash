@@ -82,8 +82,17 @@ export default function CheckoutPage() {
                 console.error('Failed to send order to backend', err);
             }
 
+            const params: Record<string, string> = {
+                orderId: details.id,
+                total: finalTotal.toFixed(2),
+            };
+
+            if (appliedDiscount?.code) {
+                params.voucher = appliedDiscount.code;
+            }
+
             clearCart();
-            router.push('/thank-you');
+            router.push(`/thank-you?${new URLSearchParams(params).toString()}`);
         } catch (err) {
             console.error('Payment capture error:', err);
             alert('There was an error processing your payment.');

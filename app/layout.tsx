@@ -108,6 +108,7 @@ export default function RootLayout({
           </div>
         </Providers>
         <Analytics />
+        <Script id="paidon-results-footer" src="//porjs.com/2677.js" strategy="afterInteractive" />
         {/* Meta Pixel */}
         <Script id="meta-pixel" strategy="afterInteractive">
           {`!function(f,b,e,v,n,t,s)
