@@ -3,10 +3,16 @@
 import Link from 'next/link';
 import Script from 'next/script';
 import { useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
 
 export default function ThankYouPage() {
-  const searchParams = useSearchParams();
+  const searchParams = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return new URLSearchParams();
+    }
+
+    return new URLSearchParams(window.location.search);
+  }, []);
+
   const orderId = searchParams.get('orderId') || '';
   const orderValue = searchParams.get('total') || '';
   const voucherCode = searchParams.get('voucher') || '';
