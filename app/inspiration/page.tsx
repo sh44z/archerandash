@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Script from 'next/script';
 import { Metadata } from 'next';
 import { normalizeDriveLink } from '@/lib/imageUtils';
 import { getStaticInspirationPosts } from '@/lib/inspirationData';
@@ -78,6 +79,15 @@ export default async function InspirationPage() {
                         ))
                     )}
                 </div>
+
+                <section className="mt-16">
+                    <div id="soro-blog"></div>
+                    <Script
+                        src="https://app.trysoro.com/api/embed/3d2963ca-2134-4b81-8ae6-0a98a48014a7"
+                        strategy="afterInteractive"
+                        defer
+                    />
+                </section>
             </div>
         </div>
     );

@@ -88,9 +88,18 @@ export default function CartDrawer() {
                 // Don't fail the transaction if notification fails
             }
 
+            const params: Record<string, string> = {
+                orderId: details.id,
+                total: finalTotal.toFixed(2),
+            };
+
+            if (appliedDiscount?.code) {
+                params.voucher = appliedDiscount.code;
+            }
+
             clearCart();
             setIsCartOpen(false);
-            router.push('/thank-you');
+            router.push(`/thank-you?${new URLSearchParams(params).toString()}`);
         } catch (error: any) {
             console.error('Payment capture error:', error);
 
