@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -15,15 +15,16 @@ const geistMono = Geist_Mono({
 });
 
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  minimumScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.archerandash.com'),
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    minimumScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-  },
   formatDetection: {
     telephone: false,
     email: false,
@@ -111,7 +112,8 @@ export default function RootLayout({
           </div>
         </Providers>
         <Analytics />
-        <Script id="paidon-results-footer" src="//porjs.com/2677.js" strategy="afterInteractive" />
+        {/* Paid On Results Page Footer Tag */}
+        <Script id="paidon-results-footer" src="https://porjs.com/2677.js" strategy="afterInteractive" />
         {/* Meta Pixel */}
         <Script id="meta-pixel" strategy="afterInteractive">
           {`!function(f,b,e,v,n,t,s)

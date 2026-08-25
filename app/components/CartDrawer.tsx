@@ -59,7 +59,7 @@ export default function CartDrawer() {
                         country_code: details.purchase_units[0].shipping.address.country_code
                     } : null
                 },
-                total: cartTotal.toFixed(2),
+                total: finalTotal.toFixed(2),
                 currency: details.purchase_units[0]?.amount?.currency_code || 'GBP',
                 products: items.map(item => ({
                     productId: item.productId,

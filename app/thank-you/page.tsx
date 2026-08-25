@@ -1,44 +1,107 @@
-﻿'use client';
+'use client';
 
 import Link from 'next/link';
-import Script from 'next/script';
-import { useMemo } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-export default function ThankYouPage() {
-  const searchParams = useMemo(() => {
-    if (typeof window === 'undefined') {
-      return new URLSearchParams();
+function ThankYouContent() {
+  const searchParams = useSearchParams();
+  const [paramsState, setParamsState] = useState<{
+    orderId: string;
+    total: string;
+    voucher: string;
+  }>({
+    orderId: '',
+    total: '',
+    voucher: '',
+  });
+
+  useEffect(() => {
+    // Read from useSearchParams or fallback to window.location.search
+    const getParam = (keys: string[]): string => {
+      for (const key of keys) {
+        const val = searchParams?.get(key);
+        if (val) return val;
+      }
+      if (typeof window !== 'undefined') {
+        const windowParams = new URLSearchParams(window.location.search);
+        for (const key of keys) {
+          const val = windowParams.get(key);
+          if (val) return val;
+        }
+      }
+      return '';
+    };
+
+    const rawOrderId = getParam(['orderId', 'SaleID', 'order_id', 'id']);
+    const rawTotal = getParam(['total', 'OrderValue', 'order_value', 'amount', 'value']);
+    const rawVoucher = getParam(['voucher', 'VoucherCode', 'discount', 'coupon', 'voucherCode']);
+
+    // Clean total to ensure valid numeric string without currency symbols
+    const cleanedTotal = rawTotal ? rawTotal.replace(/[^0-9.]/g, '') : '';
+
+    setParamsState({
+      orderId: rawOrderId.trim(),
+      total: cleanedTotal,
+      voucher: rawVoucher.trim(),
+    });
+  }, [searchParams]);
+
+  const { orderId, total: orderValue, voucher: voucherCode } = paramsState;
+
+  // Build Paid On Results Conversion URLs
+  const { conversionUrl, noScriptUrl } = useMemo(() => {
+    if (!orderId || !orderValue) {
+      return { conversionUrl: '', noScriptUrl: '' };
     }
-
-    return new URLSearchParams(window.location.search);
-  }, []);
-
-  const orderId = searchParams.get('orderId') || '';
-  const orderValue = searchParams.get('total') || '';
-  const voucherCode = searchParams.get('voucher') || '';
-
-  const conversionUrl = useMemo(() => {
-    if (!orderId || !orderValue) return '';
 
     const params = new URLSearchParams({
       client: 'java',
       MerchantID: '2677',
       SaleID: orderId,
       OrderValue: orderValue,
+      VoucherCode: voucherCode || '',
       ExcludeVAT: 'NO',
     });
 
-    if (voucherCode) {
-      params.set('VoucherCode', voucherCode);
-    }
+    const jsUrl = `https://portgk.com/create-sale?${params.toString()}`;
+    const imgParams = new URLSearchParams(params);
+    imgParams.set('client', 'img');
+    const imgUrl = `https://portgk.com/create-sale?${imgParams.toString()}`;
 
-    return `https://portgk.com/create-sale?${params.toString()}`;
+    return { conversionUrl: jsUrl, noScriptUrl: imgUrl };
   }, [orderId, orderValue, voucherCode]);
 
-  const noScriptUrl = useMemo(() => {
-    if (!conversionUrl) return '';
-    return conversionUrl.replace('client=java', 'client=img');
-  }, [conversionUrl]);
+  // Execute Paid On Results conversion tracking tag dynamically
+  useEffect(() => {
+    if (!conversionUrl || !orderId) return;
+
+    const storageKey = `por_sale_tracked_${orderId}`;
+    if (typeof window !== 'undefined') {
+      try {
+        if (sessionStorage.getItem(storageKey)) {
+          // Prevent double tracking if user reloads the page
+          return;
+        }
+        sessionStorage.setItem(storageKey, 'true');
+      } catch (e) {
+        // Ignore sessionStorage restrictions in private browsing
+      }
+
+      // Inject Paid On Results conversion JavaScript tag
+      const script = document.createElement('script');
+      script.src = conversionUrl;
+      script.type = 'text/javascript';
+      script.async = true;
+      document.body.appendChild(script);
+
+      // Fire fallback image beacon
+      if (noScriptUrl) {
+        const beacon = new Image();
+        beacon.src = noScriptUrl;
+      }
+    }
+  }, [conversionUrl, noScriptUrl, orderId]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -54,18 +117,20 @@ export default function ThankYouPage() {
           <p className="text-gray-600">We will aim to dispatch your order within 2 working days.</p>
         </div>
 
-        {conversionUrl && (
-          <div className="mb-6 text-left text-sm text-gray-500">
-            <p className="mb-2">Affiliate tracking has been recorded for:</p>
+        {orderId && (
+          <div className="mb-6 text-left text-sm text-gray-500 bg-gray-50 p-4 rounded-md border border-gray-100">
+            <p className="mb-2 font-semibold text-gray-700">Order Summary:</p>
             <p>
-              <span className="font-medium">Order ID:</span> {orderId}
+              <span className="font-medium text-gray-600">Order ID:</span> {orderId}
             </p>
-            <p>
-              <span className="font-medium">Order value:</span> £{orderValue}
-            </p>
+            {orderValue && (
+              <p>
+                <span className="font-medium text-gray-600">Order Value:</span> £{orderValue}
+              </p>
+            )}
             {voucherCode && (
               <p>
-                <span className="font-medium">Voucher code:</span> {voucherCode}
+                <span className="font-medium text-gray-600">Voucher Code:</span> {voucherCode}
               </p>
             )}
           </div>
@@ -88,11 +153,28 @@ export default function ThankYouPage() {
       </div>
 
       {conversionUrl && (
-        <>
-          <Script id="paidon-results-conversion" src={conversionUrl} strategy="afterInteractive" />
-          <noscript dangerouslySetInnerHTML={{ __html: `<img src="${noScriptUrl}" width="10" height="10" border="0" />` }} />
-        </>
+        <noscript
+          dangerouslySetInnerHTML={{
+            __html: `<img src="${noScriptUrl}" width="10" height="10" border="0" />`,
+          }}
+        />
       )}
     </div>
+  );
+}
+
+export default function ThankYouPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+            <p className="text-gray-600">Loading order details...</p>
+          </div>
+        </div>
+      }
+    >
+      <ThankYouContent />
+    </Suspense>
   );
 }
