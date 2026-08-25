@@ -83,9 +83,9 @@ export default async function InspirationPage() {
                 <section className="mt-16">
                     <div id="soro-blog"></div>
                     <Script
+                        id="soro-blog-script"
                         src="https://app.trysoro.com/api/embed/3d2963ca-2134-4b81-8ae6-0a98a48014a7"
                         strategy="afterInteractive"
-                        defer
                     />
                 </section>
             </div>
