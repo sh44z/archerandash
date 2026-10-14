@@ -14,8 +14,52 @@ export const metadata: Metadata = {
 export default async function InspirationPage() {
     const posts = getStaticInspirationPosts();
 
+    const blogJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Blog',
+        name: 'Archer and Ash — Inspiration',
+        url: 'https://www.archerandash.com/inspiration',
+        description: 'Design tips, wall art guides and home décor inspiration from Archer and Ash.',
+        publisher: {
+            '@type': 'Organization',
+            name: 'Archer And Ash UK',
+            url: 'https://www.archerandash.com',
+            address: {
+                '@type': 'PostalAddress',
+                streetAddress: '216-220 Blackfriars Road',
+                addressLocality: 'London',
+                postalCode: 'SE1 0XL',
+                addressCountry: 'GB',
+            },
+        },
+        blogPost: posts.map((post) => ({
+            '@type': 'BlogPosting',
+            headline: post.title,
+            description: post.excerpt,
+            image: post.coverImage,
+            datePublished: post.publishedAt,
+            dateModified: post.updatedAt,
+            author: {
+                '@type': 'Organization',
+                name: post.author,
+            },
+            url: `https://www.archerandash.com/inspiration/${post.slug || post._id}`,
+            mainEntityOfPage: {
+                '@type': 'WebPage',
+                '@id': `https://www.archerandash.com/inspiration/${post.slug || post._id}`,
+            },
+        })),
+    };
+
     return (
         <div className="bg-white min-h-screen">
+            {/* JSON-LD: Blog + BlogPosting list — lets Google discover and index each article */}
+            <Script
+                id="blog-jsonld"
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(blogJsonLd) }}
+            />
+
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
                 <div className="text-center">
                     <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl font-serif">
@@ -32,7 +76,7 @@ export default async function InspirationPage() {
                             No articles found yet. Check back soon for inspiration!
                         </div>
                     ) : (
-                        posts.map((post: any) => (
+                        posts.map((post) => (
                             <div key={post._id} className="flex flex-col rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:scale-[1.02]">
                                 <div className="flex-shrink-0">
                                     <Link href={`/inspiration/${post.slug || post._id}`}>

@@ -1,11 +1,18 @@
 import Link from 'next/link';
+import Script from 'next/script';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { normalizeDriveLink } from '@/lib/imageUtils';
-import { getStaticInspirationPostBySlug } from '@/lib/inspirationData';
+import { getStaticInspirationPostBySlug, getStaticInspirationPosts } from '@/lib/inspirationData';
 
-// Force dynamic rendering to ensure fresh content
-export const dynamic = 'force-dynamic';
+// Pre-render all known blog post slugs at build time so Googlebot sees full HTML
+export async function generateStaticParams() {
+    const posts = getStaticInspirationPosts();
+    return posts.map((post) => ({ slug: post.slug }));
+}
+
+// Allow ISR — revalidate every 24 h in case content changes
+export const revalidate = 86400;
 
 interface PageProps {
     params: Promise<{ slug: string }>;
@@ -48,14 +55,58 @@ export default async function BlogPostPage(props: PageProps) {
     }
 
     // Process HTML content to normalize any Google Drive image links
-    const contentWithNormalizedImages = post.content 
-        ? post.content.replace(/<img(.*?)src=["'](.*?)["']/gi, (match: string, prefix: string, src: string) => {
+    const contentWithNormalizedImages = post.content
+        ? post.content.replace(/<img(.*?)src=["'](.*?)['"]/gi, (match: string, prefix: string, src: string) => {
             return `<img${prefix}src="${normalizeDriveLink(src)}"`;
         })
         : '';
 
+    const articleJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: post.title,
+        description: post.excerpt,
+        image: normalizeDriveLink(post.coverImage),
+        datePublished: post.publishedAt,
+        dateModified: post.updatedAt,
+        author: {
+            '@type': 'Organization',
+            name: post.author,
+            url: 'https://www.archerandash.com',
+        },
+        publisher: {
+            '@type': 'Organization',
+            name: 'Archer And Ash UK',
+            url: 'https://www.archerandash.com',
+            address: {
+                '@type': 'PostalAddress',
+                streetAddress: '216-220 Blackfriars Road',
+                addressLocality: 'London',
+                postalCode: 'SE1 0XL',
+                addressCountry: 'GB',
+            },
+        },
+        url: `https://www.archerandash.com/inspiration/${post.slug}`,
+        mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `https://www.archerandash.com/inspiration/${post.slug}`,
+        },
+        isPartOf: {
+            '@type': 'Blog',
+            '@id': 'https://www.archerandash.com/inspiration',
+            name: 'Archer and Ash — Inspiration',
+        },
+    };
+
     return (
         <article className="bg-white min-h-screen">
+            {/* JSON-LD: BlogPosting structured data for Google */}
+            <Script
+                id={`article-jsonld-${post.slug}`}
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+            />
+
             {/* Hero Image */}
             <div className="w-full h-64 md:h-96 relative">
                 <img

@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next';
 import dbConnect from '@/lib/db';
 import Product from '@/models/Product';
 import Category from '@/models/Category';
+import { getStaticInspirationPosts } from '@/lib/inspirationData';
 
 const baseUrl = 'https://www.archerandash.com';
 
@@ -67,6 +68,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         loadCategoryEntries(),
     ]);
 
+    // Static inspiration / blog posts
+    const inspirationPosts = getStaticInspirationPosts();
+    const inspirationEntries: MetadataRoute.Sitemap = inspirationPosts.map((post) => ({
+        url: `${baseUrl}/inspiration/${post.slug}`,
+        lastModified: new Date(post.updatedAt || post.publishedAt),
+        changeFrequency: 'monthly',
+        priority: 0.7,
+    }));
+
     return [
         {
             url: baseUrl,
@@ -87,6 +97,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.6,
         },
         {
+            url: `${baseUrl}/inspiration`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.8,
+        },
+        {
+            url: `${baseUrl}/contact`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly',
+            priority: 0.6,
+        },
+        {
             url: `${baseUrl}/about`,
             lastModified: new Date(),
             changeFrequency: 'monthly',
@@ -104,6 +126,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             changeFrequency: 'monthly',
             priority: 0.5,
         },
+        ...inspirationEntries,
         ...categoryEntries,
         ...productEntries,
     ];

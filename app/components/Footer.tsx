@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FaFacebook, FaInstagram } from 'react-icons/fa';
+import { FaFacebook, FaInstagram, FaMapMarkerAlt } from 'react-icons/fa';
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
@@ -56,12 +56,45 @@ export default function Footer() {
                                 <span className="block text-xs uppercase tracking-wider text-gray-500 mb-1 mt-4">Business Name</span>
                                 <span>Archer And Ash UK</span>
                             </li>
+                            <li>
+                                <span className="block text-xs uppercase tracking-wider text-gray-500 mb-1 mt-4">Registered Office</span>
+                                <address
+                                    className="not-italic text-gray-400 leading-relaxed"
+                                    itemScope
+                                    itemType="https://schema.org/PostalAddress"
+                                >
+                                    <FaMapMarkerAlt className="inline-block h-3 w-3 mr-1 text-gray-500 mb-0.5" />
+                                    <span itemProp="streetAddress">216-220 Blackfriars Road</span>,{' '}
+                                    <span itemProp="addressLocality">London</span>{' '}
+                                    <span itemProp="postalCode">SE1 0XL</span>,{' '}
+                                    <span itemProp="addressCountry">UK</span>
+                                </address>
+                            </li>
                         </ul>
                     </div>
                 </div>
 
-                <div className="border-t border-gray-800 pt-8 mt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
-                    <p>&copy; {currentYear} Archer And Ash UK. All rights reserved.</p>
+                <div
+                    className="border-t border-gray-800 pt-8 mt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500"
+                    itemScope
+                    itemType="https://schema.org/Organization"
+                >
+                    <meta itemProp="name" content="Archer And Ash UK" />
+                    <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6">
+                        <p>&copy; {currentYear} Archer And Ash UK. All rights reserved.</p>
+                        <p className="text-gray-600">
+                            Registered Office:{' '}
+                            <span
+                                itemProp="address"
+                                itemScope
+                                itemType="https://schema.org/PostalAddress"
+                            >
+                                <span itemProp="streetAddress">216-220 Blackfriars Road</span>,{' '}
+                                <span itemProp="addressLocality">London</span>{' '}
+                                <span itemProp="postalCode">SE1 0XL</span>
+                            </span>
+                        </p>
+                    </div>
                     <div className="flex space-x-6 mt-4 md:mt-0">
                         <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
                         <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
