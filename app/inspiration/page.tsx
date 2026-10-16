@@ -1,14 +1,18 @@
 import Link from 'next/link';
-import Script from 'next/script';
 import { Metadata } from 'next';
 import { normalizeDriveLink } from '@/lib/imageUtils';
 import { getStaticInspirationPosts } from '@/lib/inspirationData';
 
-export const dynamic = 'force-dynamic';
+// Revalidate every 24 h — allows static generation at build time so
+// Googlebot receives full HTML immediately, while still staying fresh.
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
     title: 'Inspiration | Archer and Ash',
     description: 'Explore our latest articles, design tips, and inspiration for your home decor journey with Archer and Ash.',
+    alternates: {
+        canonical: 'https://www.archerandash.com/inspiration',
+    },
 };
 
 export default async function InspirationPage() {
@@ -53,9 +57,8 @@ export default async function InspirationPage() {
 
     return (
         <div className="bg-white min-h-screen">
-            {/* JSON-LD: Blog + BlogPosting list — lets Google discover and index each article */}
-            <Script
-                id="blog-jsonld"
+            {/* JSON-LD: Blog + BlogPosting list — rendered in initial HTML so Googlebot picks it up */}
+            <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(blogJsonLd) }}
             />

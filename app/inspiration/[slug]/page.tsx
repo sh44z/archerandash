@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Script from 'next/script';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { normalizeDriveLink } from '@/lib/imageUtils';
@@ -35,6 +34,9 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     return {
         title: `${post.title} | Archer and Ash`,
         description: post.excerpt,
+        alternates: {
+            canonical: `https://www.archerandash.com/inspiration/${post.slug}`,
+        },
         openGraph: {
             title: post.title,
             description: post.excerpt,
@@ -100,9 +102,8 @@ export default async function BlogPostPage(props: PageProps) {
 
     return (
         <article className="bg-white min-h-screen">
-            {/* JSON-LD: BlogPosting structured data for Google */}
-            <Script
-                id={`article-jsonld-${post.slug}`}
+            {/* JSON-LD: BlogPosting structured data — rendered server-side so Googlebot reads it */}
+            <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
             />
