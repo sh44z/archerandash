@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Script from 'next/script';
 import { Metadata } from 'next';
 import { normalizeDriveLink } from '@/lib/imageUtils';
 import { getStaticInspirationPosts } from '@/lib/inspirationData';
